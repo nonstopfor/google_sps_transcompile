@@ -1,8 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for
 import requests
 import json
+import sys
+sys.path.append("./transcoder")
+
+from transcoder.translate import Translator
 
 app = Flask(__name__)
+translator1 = Translator(
+                            model_path="transcoder/models/model_1.pth", 
+                            BPE_path="transcoder/models/BPE_with_comments_codes"
+                        )
+translator2 = Translator(
+                            model_path="transcoder/models/model_2.pth", 
+                            BPE_path="transcoder/models/BPE_with_comments_codes"
+                        )
 source = ''
 result = ''
 source2 = ''
@@ -75,4 +87,10 @@ def transform():
 
 
 def run_transform(source, source_language, target_language):
-    return 'testing'
+    assert source_language in {'python', 'java', 'cpp'}, source_language
+    assert target_language in {'python', 'java', 'cpp'}, target_language
+    if (source_language == 'cpp' and target_language == 'java') or source_language == 'java':
+        output = translator1.translate(source, source_language, target_language)
+    else:
+        output = translator2.translate(source, source_language, target_language)
+    return output
