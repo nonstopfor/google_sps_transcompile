@@ -1,6 +1,6 @@
 Flask==1.1.1
 requests==2.22.0
 numpy==1.18.5
-pytorch==1.4.0
+torch==1.4.0
 fastbpe==0.1.1
 sacrebleu==1.2.11
