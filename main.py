@@ -89,6 +89,8 @@ def transform():
 def run_transform(source, source_language, target_language):
     assert source_language in {'python', 'java', 'cpp'}, source_language
     assert target_language in {'python', 'java', 'cpp'}, target_language
+    assert source_language != target_language, "Source language is same as target language!"
+    
     if (source_language == 'cpp' and target_language == 'java') or source_language == 'java':
         output = translator1.translate(source, source_language, target_language)
     else:
