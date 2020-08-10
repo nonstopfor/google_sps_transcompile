@@ -45,7 +45,11 @@ def compile_run(source_code, language, url='https://api.jdoodle.com/v1/execute')
     }
 
     response = requests.post(url=url, data=json.dumps(data), headers={"Content-Type": "application/json"})
-    result = json.loads(response.text)['output']
+    w = json.loads(response.text)
+    if 'output' in w:
+        result = w['output']
+    else:
+        result = w['error']
     return result
 
 
@@ -64,6 +68,9 @@ def compile():
         data = request.get_json(silent=True)
         source = data['code']
         language = data['language']
+        if language == 'cpp':
+            language = 'c++'
+
         result = compile_run(source, language)
         print(source, result)
         return {'source': source, 'result': result}
