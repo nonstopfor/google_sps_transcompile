@@ -169,18 +169,19 @@
             el: '#compile2',
             methods: {
                 compileCode: function () {
-                    var sourceCode = source.textarea;
+                    var sourceCode = source2.textarea;
                     // console.log(sourceCode);
                     axios({
                         method: 'post',
                         url: '/compile/',
                         data: {
                             code: sourceCode,
+                            language: transform_select.value,
                         }
                     }).then(function (response) {
                         console.log(response);
-                        source.textarea = response.data.source;
-                        result.textarea = response.data.result;
+                        source2.textarea = response.data.source;
+                        result2.textarea = response.data.result;
                     }).catch(function (error) {
                         console.log(error);
                     });
