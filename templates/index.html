@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/theme/ayu-mirage.css">
     <title>Transcompile</title>
     <style>
         h1 {
@@ -11,12 +13,18 @@
             color: #409EFF;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/addon/edit/matchbrackets.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.0/dist/vue-codemirror.js"></script>
     <!-- import Vue before Element -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <!-- import JavaScript -->
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <!-- import axios (a http library) -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 </head>
 
 <body>
@@ -44,8 +52,13 @@
         </el-select>
     </template>
     <br />
-    <el-input type="textarea" :rows="10" v-model="textarea" id='code' style="width: 40%;" placeholder="请输入代码">
-    </el-input>
+    <codemirror
+        v-model="textarea"
+        id="code"
+        style="width: 40%"
+        :options="cmOption"
+    ></codemirror>
+    
     <el-input type="textarea" :rows="10" v-model="textarea" id='result' style="width: 40%;margin-left: 10%;" placeholder="编译/运行结果">
     </el-input>
 
@@ -59,150 +72,176 @@
     </el-input>
     <el-input type="textarea" :rows="10" v-model="textarea" id='result2' style="width: 40%;margin-left: 10%;" placeholder="编译/运行结果">
     </el-input>
-
-    <script>
-        var compile = new Vue({
-            el: '#compile',
-            methods: {
-                compileCode: function () {
-                    var sourceCode = source.textarea;
-                    // console.log(sourceCode);
-                    axios({
-                        method: 'post',
-                        url: '/compile/',
-                        data: {
-                            code: sourceCode,
-                            language: select.value,
-                        }
-                    }).then(function (response) {
-                        console.log(response);
-                        source.textarea = response.data.source;
-                        result.textarea = response.data.result;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            },
-        });
-
-        var select = new Vue({
-            el: '#select',
-            data: {
-                options: [{
-                        value: 'python',
-                        label: 'python'
-                    },
-                    {
-                        value: 'cpp',
-                        label: 'c++'
-                    },
-                    {
-                        value: 'java',
-                        label: 'java'
-                    },
-                ],
-                value: ''
-            }
-        });
-
-        var transform = new Vue({
-            el: '#transform',
-            methods: {
-                transformCode: function () {
-                    var sourceCode = source.textarea;
-                    // console.log(sourceCode);
-                    axios({
-                        method: 'post',
-                        url: '/transform/',
-                        data: {
-                            code: sourceCode,
-                            source_language: select.value,
-                            target_language: transform_select.value,
-                        }
-                    }).then(function (response) {
-                        console.log(response);
-                        source.textarea = response.data.source;
-                        source2.textarea = response.data.result;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            },
-        });
-
-        var transform_select = new Vue({
-            el: '#transform_select',
-            data: {
-                options: [{
-                        value: 'python',
-                        label: 'python'
-                    },
-                    {
-                        value: 'cpp',
-                        label: 'c++'
-                    },
-                    {
-                        value: 'java',
-                        label: 'java'
-                    },
-                ],
-                value: ''
-            }
-        });
-
-        var source = new Vue({
-            el: '#code',
-            data: {
-                textarea: ''
-            }
-        });
-
-        var result = new Vue({
-            el: '#result',
-            data: {
-                textarea: ''
-            }
-        });
-
-
-        var compile2 = new Vue({
-            el: '#compile2',
-            methods: {
-                compileCode: function () {
-                    var sourceCode = source2.textarea;
-                    // console.log(sourceCode);
-                    axios({
-                        method: 'post',
-                        url: '/compile/',
-                        data: {
-                            code: sourceCode,
-                            language: transform_select.value,
-                        }
-                    }).then(function (response) {
-                        console.log(response);
-                        source2.textarea = response.data.source;
-                        result2.textarea = response.data.result;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            },
-        });
-
-        var source2 = new Vue({
-            el: '#code2',
-            data: {
-                textarea: ''
-            }
-        });
-
-        var result2 = new Vue({
-            el: '#result2',
-            data: {
-                textarea: ''
-            }
-        });
-    </script>
 </body>
 
 </html>
+
+<script>
+Vue.use(VueCodemirror);
+
+var defaultCpp = String.raw`#include <iostream>
+using namespace std;
+
+void my_function() {
+  // Enter your code here
+}
+
+int main(){
+  my_function();
+  return 0;
+}
+`;
+
+const themeName = 'ayu-mirage';
+
+var source = new Vue({
+    el: '#code',
+	data: {
+        textarea: `#include <cstdio>`,
+        cmOption: {
+            tabSize: 4,
+            styleActiveLine: true,
+            lineNumbers: true,
+            mode: 'text/x-c++src',
+            theme: themeName,
+            matchBrackets: true
+        }
+	}
+});
+
+var compile = new Vue({
+    el: '#compile',
+    methods: {
+        compileCode: function () {
+            var sourceCode = source.textarea;
+            console.log(sourceCode);
+            axios({
+                method: 'post',
+                url: '/compile/',
+                data: {
+                    code: sourceCode,
+                    language: select.value,
+                }
+            }).then(function (response) {
+                console.log(response);
+                source.textarea = response.data.source;
+                result.textarea = response.data.result;
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+    },
+});
+
+var select = new Vue({
+    el: '#select',
+    data: {
+        options: [{
+                value: 'python',
+                label: 'python'
+            },
+            {
+                value: 'cpp',
+                label: 'c++'
+            },
+            {
+                value: 'java',
+                label: 'java'
+            },
+        ],
+        value: ''
+    }
+});
+
+var transform = new Vue({
+    el: '#transform',
+    methods: {
+        transformCode: function () {
+            var sourceCode = source.textarea;
+            // console.log(sourceCode);
+            axios({
+                method: 'post',
+                url: '/transform/',
+                data: {
+                    code: sourceCode,
+                    source_language: select.value,
+                    target_language: transform_select.value,
+                }
+            }).then(function (response) {
+                console.log(response);
+                source.textarea = response.data.source;
+                source2.textarea = response.data.result;
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+    },
+});
+
+var transform_select = new Vue({
+    el: '#transform_select',
+    data: {
+        options: [{
+                value: 'python',
+                label: 'python'
+            },
+            {
+                value: 'cpp',
+                label: 'c++'
+            },
+            {
+                value: 'java',
+                label: 'java'
+            },
+        ],
+        value: ''
+    }
+});
+
+var result = new Vue({
+    el: '#result',
+    data: {
+        textarea: ''
+    }
+});
+
+
+var compile2 = new Vue({
+    el: '#compile2',
+    methods: {
+        compileCode: function () {
+            var sourceCode = source2.textarea;
+            // console.log(sourceCode);
+            axios({
+                method: 'post',
+                url: '/compile/',
+                data: {
+                    code: sourceCode,
+                    language: transform_select.value,
+                }
+            }).then(function (response) {
+                console.log(response);
+                source2.textarea = response.data.source;
+                result2.textarea = response.data.result;
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+    },
+});
+
+var source2 = new Vue({
+    el: '#code2',
+    data: {
+        textarea: ''
+    }
+});
+
+var result2 = new Vue({
+    el: '#result2',
+    data: {
+        textarea: ''
+    }
+});
+
+</script>
