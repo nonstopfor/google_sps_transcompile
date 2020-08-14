@@ -86,11 +86,11 @@
 <script>
     Vue.use(VueCodemirror);
 
-    var defaultCpp = String.raw `#include <iostream>
+    var defaultCpp = String.raw `#include <bits/stdc++.h>
 using namespace std;
 
 void my_function() {
-  // Enter your code here
+  // Enter or paste your code here
 }
 
 int main(){
@@ -99,12 +99,32 @@ int main(){
 }
 `;
 
+    var defaultPython = String.raw`# import any needed libraries here
+def my_function():
+  # Enter or paste your code here
+
+my_function()
+`;
+
+    var defaultJava = String.raw`// import any needed libraries here
+
+public class MyJavaClass {
+
+    private static void my_function() {
+        // Enter or paste your code here
+    }
+
+    public static void main(String[] args) {
+        my_function();
+    }
+}
+`;
     const themeName = 'ayu-mirage';
 
     var source = new Vue({
         el: '#code',
         data: {
-            textarea: `#include <cstdio>`,
+            textarea: '',
             cmOption: {
                 tabSize: 4,
                 styleActiveLine: true,
@@ -162,10 +182,13 @@ int main(){
             value: function (newValue) {
                 if (newValue == "cpp") {
                     source.cmOption.mode = "text/x-c++src";
+                    source.textarea = defaultCpp;
                 } else if (newValue == "python") {
                     source.cmOption.mode = "text/x-python";
+                    source.textarea = defaultPython;
                 } else if (newValue == "java") {
                     source.cmOption.mode = "text/x-java";
+                    source.textarea = defaultJava;
                 }
             }
         },
