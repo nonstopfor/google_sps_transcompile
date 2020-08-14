@@ -13,7 +13,7 @@
     <title>Translate your code!</title>
     <style>
         .CodeMirror {
-            height: 240px;
+            height: 300px;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.js"></script>
@@ -77,68 +77,33 @@
                         </codemirror>
                     </v-col>
                 </v-row>
+
+                <v-row>
+                    <v-col>
+                        <v-btn color="secondary" @click="executeSource">Execute</v-btn>
+                    </v-col>
+                    <v-col>
+                        <v-btn color="secondary" @click="executeTranslated">Execute</v-btn>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col>
+                        <v-textarea
+                        solo
+                        v-model="sourceResult"
+                        ></v-textarea>
+                    </v-col>
+                    <v-col>
+                        <v-textarea
+                        solo
+                        v-model="targetResult"
+                        ></v-textarea>
+                    </v-col>
+                </v-row>
             </v-container>
           </v-main>
         </v-app>
     </div>
-
-    <!-- <el-button type="primary" id="compile" style="margin: 5px;" @click="compileCode">编译/运行</el-button> -->
-    <!-- <el-input type="submit" value="编译/运行" style="margin: 5px;width: 10%;" id='submit'>
-        </el-input> -->
-    <!-- <template id="select">
-        <el-select v-model="value" placeholder="请选择代码语言">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select>
-    </template>
-    <el-button type="primary" id="transform" style="margin: 5px;" @click="transformCode">转换代码</el-button>
-
-    <template id="transform_select">
-        <el-select v-model="value" placeholder="请选择目标代码语言">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select>
-    </template>
-    <br /> -->
-    
-    <!-- <v-container>
-        <v-row>
-            <v-col>
-                <codemirror v-model="textarea" id="code" style="width: 40%; display: inline-block; margin-right: 10%;"
-        :options="cmOption"></codemirror>
-            </v-col>
-            <v-col>
-                <codemirror v-model="textarea" id="result" style="width: 40%; display: inline-block;" :options="cmOption">
-                </codemirror>
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-col>
-                <codemirror v-model="textarea" id="code-added" style="width: 40%; display: inline-block; margin-right: 10%; margin-top: -10px;"
-        :options="cmOption"></codemirror>
-            </v-col>
-        </v-row>
-    </v-container> -->
-    
-    <!-- <el-input type="textarea" :rows="10" v-model="textarea" id='result' style="width: 40%;margin-left: 10%;" placeholder="编译/运行结果">
-    </el-input> -->
-    
-
-    <!-- <br />
-
-    <el-button type="primary" id="compile2" style="margin: 5px;" @click="compileCode">编译/运行</el-button> -->
-    <!-- <el-input type="submit" value="编译/运行" style="margin: 5px;width: 10%;" id='submit'>
-        </el-input> -->
-    <!-- <br /> -->
-    <!-- <el-input type="textarea" :rows="10" v-model="textarea" id='code2' style="width: 40%;" placeholder="转换后的代码">
-    </el-input> -->
-    <!-- <codemirror v-model="textarea" id="code2" style="width: 40%; display: inline-block; margin-right: 10%;"
-        :options="cmOption"></codemirror> -->
-    <!-- <el-input type="textarea" :rows="10" v-model="textarea" id='result2' style="width: 40%;margin-left: 10%;"
-        placeholder="编译/运行结果">
-    </el-input> -->
-    <!-- <codemirror v-model="textarea" id="result2" style="width: 40%; display: inline-block;" :options="cmOption">
-    </codemirror> -->
 </body>
 
 </html>
@@ -211,7 +176,9 @@ new Vue({
             mode: 'text/x-c++src',
             theme: themeName,
             matchBrackets: true,
-        }
+        },
+        sourceResult: '',
+        targetResult: ''
     },
     watch: {
         sourceLanguage: function (newValue) {
@@ -269,101 +236,51 @@ new Vue({
             }).catch(function (error) {
                 console.log(error);
             });
+        },
+        executeSource: function() {            
+            if (this.sourceLanguage.length == 0) {
+                alert('Please select the programming language.');
+                return;
+            }
+            
+            var vm = this;
+
+            axios({
+                method: 'post',
+                url: '/compile/',
+                data: {
+                    code: this.sourceCode,
+                    language: this.sourceLanguage,
+                }
+            }).then(function (response) {
+                console.log(response);
+                vm.sourceResult = response.data.result;
+            }).catch(function (error) {
+                console.log(error);
+            });
+        },
+        executeTranslated: function() {
+            if (this.targetLanguage.length == 0) {
+                alert('Please select the programming language.');
+                return;
+            }
+            
+            var vm = this;
+
+            axios({
+                method: 'post',
+                url: '/compile/',
+                data: {
+                    code: this.translatedCode,
+                    language: this.targetLanguage,
+                }
+            }).then(function (response) {
+                console.log(response);
+                vm.targetResult = response.data.result;
+            }).catch(function (error) {
+                console.log(error);
+            });
         }
     }
 })
-
-    // var compile = new Vue({
-    //     el: '#compile',
-    //     methods: {
-    //         compileCode: function () {
-    //             var sourceCode = source.textarea;
-    //             console.log(sourceCode);
-    //             axios({
-    //                 method: 'post',
-    //                 url: '/compile/',
-    //                 data: {
-    //                     code: sourceCode,
-    //                     language: select.value,
-    //                 }
-    //             }).then(function (response) {
-    //                 console.log(response);
-    //                 source.textarea = response.data.source;
-    //                 result.textarea = response.data.result;
-    //             }).catch(function (error) {
-    //                 console.log(error);
-    //             });
-    //         }
-    //     },
-    // });
-
-    // var result = new Vue({
-    //     el: '#result',
-    //     data: {
-    //         textarea: '',
-    //         cmOption: {
-    //             tabSize: 4,
-    //             styleActiveLine: true,
-    //             lineNumbers: true,
-    //             mode: 'text/x-c++src',
-    //             theme: themeName,
-    //             matchBrackets: true,
-    //         }
-    //     }
-    // });
-
-
-    // var compile2 = new Vue({
-    //     el: '#compile2',
-    //     methods: {
-    //         compileCode: function () {
-    //             var sourceCode = source2.textarea;
-    //             // console.log(sourceCode);
-    //             axios({
-    //                 method: 'post',
-    //                 url: '/compile/',
-    //                 data: {
-    //                     code: sourceCode,
-    //                     language: transform_select.value,
-    //                 }
-    //             }).then(function (response) {
-    //                 console.log(response);
-    //                 source2.textarea = response.data.source;
-    //                 result2.textarea = response.data.result;
-    //             }).catch(function (error) {
-    //                 console.log(error);
-    //             });
-    //         }
-    //     },
-    // });
-
-    // var source2 = new Vue({
-    //     el: '#code2',
-    //     data: {
-    //         textarea: '',
-    //         cmOption: {
-    //             tabSize: 4,
-    //             styleActiveLine: true,
-    //             lineNumbers: true,
-    //             mode: 'text/x-c++src',
-    //             theme: themeName,
-    //             matchBrackets: true,
-    //         }
-    //     }
-    // });
-
-    // var result2 = new Vue({
-    //     el: '#result2',
-    //     data: {
-    //         textarea: '',
-    //         cmOption: {
-    //             tabSize: 4,
-    //             styleActiveLine: true,
-    //             lineNumbers: true,
-    //             mode: 'text/x-c++src',
-    //             theme: themeName,
-    //             matchBrackets: true,
-    //         }
-    //     }
-    // });
 </script>
