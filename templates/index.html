@@ -6,13 +6,12 @@
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/theme/ayu-mirage.css">
-    <title>Transcompile</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Translate your code!</title>
     <style>
-        h1 {
-            font-family: Arial;
-            color: #409EFF;
-        }
-
         .CodeMirror {
             height: 240px;
         }
@@ -25,24 +24,68 @@
     <script src="../CssJs/placeholder.js"></script>
     <!-- import Vue before Element -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <!-- import JavaScript -->
-    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
     <!-- import axios (a http library) -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 </head>
 
 <body>
-    <div style="text-align: center;">
-        <h1>Welcome to our transcompile website</h1>
+    <div id="app">
+        <v-app>
+          <v-main>
+            <v-container>
+                <h1>Translate your code!</h1>
+                <v-row>
+                    <v-col>
+                        <v-select
+                        v-model="sourceLanguage"
+                        label="Language of source code"
+                        :items="languageOptions"
+                        item-text="key"
+                        item-value="value"
+                        >
+                        </v-select>
+                    </v-col>
+                    <v-col>
+                        <v-select
+                        v-model="targetLanguage"
+                        label="Language you want to translate to"
+                        :items="languageOptions"
+                        item-text="key"
+                        item-value="value"
+                        >
+                        </v-select>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="3" style="margin-top: -15px;">
+                        <v-btn color="primary" @click="transformCode">Translate</v-btn>
+                    </v-col>
+                    <v-col>
+                        <v-progress-linear :value="translateProgress"></v-progress-linear>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col>
+                        <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
+                    </v-col>
+                    <v-col>
+                        <codemirror v-model="translatedCode" :options="translatedOption">
+                        </codemirror>
+                    </v-col>
+                </v-row>
+            </v-container>
+          </v-main>
+        </v-app>
     </div>
 
-
-
-    <el-button type="primary" id="compile" style="margin: 5px;" @click="compileCode">编译/运行</el-button>
+    <!-- <el-button type="primary" id="compile" style="margin: 5px;" @click="compileCode">编译/运行</el-button> -->
     <!-- <el-input type="submit" value="编译/运行" style="margin: 5px;width: 10%;" id='submit'>
         </el-input> -->
-    <template id="select">
+    <!-- <template id="select">
         <el-select v-model="value" placeholder="请选择代码语言">
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -56,37 +99,54 @@
             </el-option>
         </el-select>
     </template>
-    <br />
-    <codemirror v-model="textarea" id="code" style="width: 40%; display: inline-block; margin-right: 10%;"
+    <br /> -->
+    
+    <!-- <v-container>
+        <v-row>
+            <v-col>
+                <codemirror v-model="textarea" id="code" style="width: 40%; display: inline-block; margin-right: 10%;"
         :options="cmOption"></codemirror>
+            </v-col>
+            <v-col>
+                <codemirror v-model="textarea" id="result" style="width: 40%; display: inline-block;" :options="cmOption">
+                </codemirror>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
+                <codemirror v-model="textarea" id="code-added" style="width: 40%; display: inline-block; margin-right: 10%; margin-top: -10px;"
+        :options="cmOption"></codemirror>
+            </v-col>
+        </v-row>
+    </v-container> -->
+    
     <!-- <el-input type="textarea" :rows="10" v-model="textarea" id='result' style="width: 40%;margin-left: 10%;" placeholder="编译/运行结果">
     </el-input> -->
-    <codemirror v-model="textarea" id="result" style="width: 40%; display: inline-block;" :options="cmOption">
-    </codemirror>
+    
 
-    <br />
+    <!-- <br />
 
-    <el-button type="primary" id="compile2" style="margin: 5px;" @click="compileCode">编译/运行</el-button>
+    <el-button type="primary" id="compile2" style="margin: 5px;" @click="compileCode">编译/运行</el-button> -->
     <!-- <el-input type="submit" value="编译/运行" style="margin: 5px;width: 10%;" id='submit'>
         </el-input> -->
-    <br />
+    <!-- <br /> -->
     <!-- <el-input type="textarea" :rows="10" v-model="textarea" id='code2' style="width: 40%;" placeholder="转换后的代码">
     </el-input> -->
-    <codemirror v-model="textarea" id="code2" style="width: 40%; display: inline-block; margin-right: 10%;"
-        :options="cmOption"></codemirror>
+    <!-- <codemirror v-model="textarea" id="code2" style="width: 40%; display: inline-block; margin-right: 10%;"
+        :options="cmOption"></codemirror> -->
     <!-- <el-input type="textarea" :rows="10" v-model="textarea" id='result2' style="width: 40%;margin-left: 10%;"
         placeholder="编译/运行结果">
     </el-input> -->
-    <codemirror v-model="textarea" id="result2" style="width: 40%; display: inline-block;" :options="cmOption">
-    </codemirror>
+    <!-- <codemirror v-model="textarea" id="result2" style="width: 40%; display: inline-block;" :options="cmOption">
+    </codemirror> -->
 </body>
 
 </html>
 
 <script>
-    Vue.use(VueCodemirror);
+Vue.use(VueCodemirror);
 
-    var defaultCpp = String.raw `#include <bits/stdc++.h>
+var defaultCpp = String.raw `#include <bits/stdc++.h>
 using namespace std;
 
 void my_function() {
@@ -99,14 +159,14 @@ int main(){
 }
 `;
 
-    var defaultPython = String.raw`# import any needed libraries here
+var defaultPython = String.raw`# import any needed libraries here
 def my_function():
   # Enter or paste your code here
 
 my_function()
 `;
 
-    var defaultJava = String.raw`// import any needed libraries here
+var defaultJava = String.raw`// import any needed libraries here
 
 public class MyJavaClass {
 
@@ -119,204 +179,288 @@ public class MyJavaClass {
     }
 }
 `;
-    const themeName = 'ayu-mirage';
 
-    var source = new Vue({
-        el: '#code',
-        data: {
-            textarea: '',
-            cmOption: {
-                tabSize: 4,
-                styleActiveLine: true,
-                lineNumbers: true,
-                mode: 'text/x-c++src',
-                theme: themeName,
-                matchBrackets: true,
-            }
+const themeName = 'ayu-mirage';
+
+new Vue({
+    el: '#app',
+    vuetify: new Vuetify(),
+    data: {
+        languageOptions: [
+            { value: 'cpp', key: 'C++' },
+            { value: 'java', key: 'Java' },
+            { value: 'python', key: 'Python' }
+        ],
+        sourceLanguage: '',
+        targetLanguage: '',
+        sourceCode: '',
+        translatedCode: '',
+        translateProgress: 0,
+        sourceOption: {
+            tabSize: 4,
+            styleActiveLine: true,
+            lineNumbers: true,
+            mode: 'text/x-c++src',
+            theme: themeName,
+            matchBrackets: true,
+        },
+        translatedOption: {
+            tabSize: 4,
+            styleActiveLine: true,
+            lineNumbers: true,
+            mode: 'text/x-c++src',
+            theme: themeName,
+            matchBrackets: true,
         }
-    });
+    },
+    methods: {
+        transformCode: function () {
+            // console.log('POST source code', this.sourceCode);
+            // console.log('POST source language', this.sourceLanguage);
+            // console.log('POST target language', this.targetLanguage);
 
-    var compile = new Vue({
-        el: '#compile',
-        methods: {
-            compileCode: function () {
-                var sourceCode = source.textarea;
-                console.log(sourceCode);
-                axios({
-                    method: 'post',
-                    url: '/compile/',
-                    data: {
-                        code: sourceCode,
-                        language: select.value,
-                    }
-                }).then(function (response) {
-                    console.log(response);
-                    source.textarea = response.data.source;
-                    result.textarea = response.data.result;
-                }).catch(function (error) {
-                    console.log(error);
-                });
+            if (this.sourceCode.length == 0) {
+                alert('Source code is empty!');
+                return;
             }
-        },
-    });
 
-    var select = new Vue({
-        el: '#select',
-        data: {
-            options: [{
-                    value: 'python',
-                    label: 'python'
-                },
-                {
-                    value: 'cpp',
-                    label: 'c++'
-                },
-                {
-                    value: 'java',
-                    label: 'java'
-                },
-            ],
-            value: ''
-        },
-        watch: {
-            value: function (newValue) {
-                if (newValue == "cpp") {
-                    source.cmOption.mode = "text/x-c++src";
-                    source.textarea = defaultCpp;
-                } else if (newValue == "python") {
-                    source.cmOption.mode = "text/x-python";
-                    source.textarea = defaultPython;
-                } else if (newValue == "java") {
-                    source.cmOption.mode = "text/x-java";
-                    source.textarea = defaultJava;
+            if (this.sourceLanguage.length == 0 || this.targetLanguage.length == 0) {
+                alert('Please select the programming language.');
+                return;
+            }
+
+            var vm = this;
+
+            axios({
+                method: 'post',
+                url: '/transform/',
+                data: {
+                    code: this.sourceCode,
+                    source_language: this.sourceLanguage,
+                    target_language: this.targetLanguage,
                 }
-            }
-        },
-    });
-
-    var transform = new Vue({
-        el: '#transform',
-        methods: {
-            transformCode: function () {
-                var sourceCode = source.textarea;
-                // console.log(sourceCode);
-                axios({
-                    method: 'post',
-                    url: '/transform/',
-                    data: {
-                        code: sourceCode,
-                        source_language: select.value,
-                        target_language: transform_select.value,
-                    }
-                }).then(function (response) {
-                    console.log(response);
-                    source.textarea = response.data.source;
-                    source2.textarea = response.data.result;
-                }).catch(function (error) {
-                    console.log(error);
-                });
-            }
-        },
-    });
-
-    var transform_select = new Vue({
-        el: '#transform_select',
-        data: {
-            options: [{
-                    value: 'python',
-                    label: 'python'
-                },
-                {
-                    value: 'cpp',
-                    label: 'c++'
-                },
-                {
-                    value: 'java',
-                    label: 'java'
-                },
-            ],
-            value: ''
-        },
-        watch: {
-            value: function (newValue) {
-                if (newValue == "cpp") {
-                    source2.cmOption.mode = "text/x-c++src";
-                } else if (newValue == "python") {
-                    source2.cmOption.mode = "text/x-python";
-                } else if (newValue == "java") {
-                    source2.cmOption.mode = "text/x-java";
-                }
-            }
-        },
-    });
-
-    var result = new Vue({
-        el: '#result',
-        data: {
-            textarea: '',
-            cmOption: {
-                tabSize: 4,
-                styleActiveLine: true,
-                lineNumbers: true,
-                mode: 'text/x-c++src',
-                theme: themeName,
-                matchBrackets: true,
-            }
+            }).then(function (response) {
+                console.log('Result', response.data.result);
+                vm.translatedCode = response.data.result;
+            }).catch(function (error) {
+                console.log(error);
+            });
         }
-    });
+    }
+})
 
 
-    var compile2 = new Vue({
-        el: '#compile2',
-        methods: {
-            compileCode: function () {
-                var sourceCode = source2.textarea;
-                // console.log(sourceCode);
-                axios({
-                    method: 'post',
-                    url: '/compile/',
-                    data: {
-                        code: sourceCode,
-                        language: transform_select.value,
-                    }
-                }).then(function (response) {
-                    console.log(response);
-                    source2.textarea = response.data.source;
-                    result2.textarea = response.data.result;
-                }).catch(function (error) {
-                    console.log(error);
-                });
-            }
-        },
-    });
+    // var source = new Vue({
+    //     el: '#code',
+    //     data: {
+    //         textarea: '',
+    //         cmOption: {
+    //             tabSize: 4,
+    //             styleActiveLine: true,
+    //             lineNumbers: true,
+    //             mode: 'text/x-c++src',
+    //             theme: themeName,
+    //             matchBrackets: true,
+    //         }
+    //     }
+    // });
 
-    var source2 = new Vue({
-        el: '#code2',
-        data: {
-            textarea: '',
-            cmOption: {
-                tabSize: 4,
-                styleActiveLine: true,
-                lineNumbers: true,
-                mode: 'text/x-c++src',
-                theme: themeName,
-                matchBrackets: true,
-            }
-        }
-    });
+    // var source = new Vue({
+    //     el: '#code-added',
+    //     data: {
+    //         textarea: '',
+    //         cmOption: {
+    //             tabSize: 4,
+    //             styleActiveLine: true,
+    //             lineNumbers: true,
+    //             mode: 'text/x-c++src',
+    //             theme: themeName,
+    //             matchBrackets: true,
+    //         }
+    //     }
+    // });
 
-    var result2 = new Vue({
-        el: '#result2',
-        data: {
-            textarea: '',
-            cmOption: {
-                tabSize: 4,
-                styleActiveLine: true,
-                lineNumbers: true,
-                mode: 'text/x-c++src',
-                theme: themeName,
-                matchBrackets: true,
-            }
-        }
-    });
+    // var compile = new Vue({
+    //     el: '#compile',
+    //     methods: {
+    //         compileCode: function () {
+    //             var sourceCode = source.textarea;
+    //             console.log(sourceCode);
+    //             axios({
+    //                 method: 'post',
+    //                 url: '/compile/',
+    //                 data: {
+    //                     code: sourceCode,
+    //                     language: select.value,
+    //                 }
+    //             }).then(function (response) {
+    //                 console.log(response);
+    //                 source.textarea = response.data.source;
+    //                 result.textarea = response.data.result;
+    //             }).catch(function (error) {
+    //                 console.log(error);
+    //             });
+    //         }
+    //     },
+    // });
+
+    // var select = new Vue({
+    //     el: '#select',
+    //     data: {
+    //         options: [{
+    //                 value: 'python',
+    //                 label: 'python'
+    //             },
+    //             {
+    //                 value: 'cpp',
+    //                 label: 'c++'
+    //             },
+    //             {
+    //                 value: 'java',
+    //                 label: 'java'
+    //             },
+    //         ],
+    //         value: ''
+    //     },
+    //     watch: {
+    //         value: function (newValue) {
+    //             if (newValue == "cpp") {
+    //                 source.cmOption.mode = "text/x-c++src";
+    //                 source.textarea = defaultCpp;
+    //             } else if (newValue == "python") {
+    //                 source.cmOption.mode = "text/x-python";
+    //                 source.textarea = defaultPython;
+    //             } else if (newValue == "java") {
+    //                 source.cmOption.mode = "text/x-java";
+    //                 source.textarea = defaultJava;
+    //             }
+    //         }
+    //     },
+    // });
+
+    // var transform = new Vue({
+    //     el: '#transform',
+    //     methods: {
+    //         transformCode: function () {
+    //             var sourceCode = source.textarea;
+    //             // console.log(sourceCode);
+    //             axios({
+    //                 method: 'post',
+    //                 url: '/transform/',
+    //                 data: {
+    //                     code: sourceCode,
+    //                     source_language: select.value,
+    //                     target_language: transform_select.value,
+    //                 }
+    //             }).then(function (response) {
+    //                 console.log(response);
+    //                 source.textarea = response.data.source;
+    //                 source2.textarea = response.data.result;
+    //             }).catch(function (error) {
+    //                 console.log(error);
+    //             });
+    //         }
+    //     },
+    // });
+
+    // var transform_select = new Vue({
+    //     el: '#transform_select',
+    //     data: {
+    //         options: [{
+    //                 value: 'python',
+    //                 label: 'python'
+    //             },
+    //             {
+    //                 value: 'cpp',
+    //                 label: 'c++'
+    //             },
+    //             {
+    //                 value: 'java',
+    //                 label: 'java'
+    //             },
+    //         ],
+    //         value: ''
+    //     },
+    //     watch: {
+    //         value: function (newValue) {
+    //             if (newValue == "cpp") {
+    //                 source2.cmOption.mode = "text/x-c++src";
+    //             } else if (newValue == "python") {
+    //                 source2.cmOption.mode = "text/x-python";
+    //             } else if (newValue == "java") {
+    //                 source2.cmOption.mode = "text/x-java";
+    //             }
+    //         }
+    //     },
+    // });
+
+    // var result = new Vue({
+    //     el: '#result',
+    //     data: {
+    //         textarea: '',
+    //         cmOption: {
+    //             tabSize: 4,
+    //             styleActiveLine: true,
+    //             lineNumbers: true,
+    //             mode: 'text/x-c++src',
+    //             theme: themeName,
+    //             matchBrackets: true,
+    //         }
+    //     }
+    // });
+
+
+    // var compile2 = new Vue({
+    //     el: '#compile2',
+    //     methods: {
+    //         compileCode: function () {
+    //             var sourceCode = source2.textarea;
+    //             // console.log(sourceCode);
+    //             axios({
+    //                 method: 'post',
+    //                 url: '/compile/',
+    //                 data: {
+    //                     code: sourceCode,
+    //                     language: transform_select.value,
+    //                 }
+    //             }).then(function (response) {
+    //                 console.log(response);
+    //                 source2.textarea = response.data.source;
+    //                 result2.textarea = response.data.result;
+    //             }).catch(function (error) {
+    //                 console.log(error);
+    //             });
+    //         }
+    //     },
+    // });
+
+    // var source2 = new Vue({
+    //     el: '#code2',
+    //     data: {
+    //         textarea: '',
+    //         cmOption: {
+    //             tabSize: 4,
+    //             styleActiveLine: true,
+    //             lineNumbers: true,
+    //             mode: 'text/x-c++src',
+    //             theme: themeName,
+    //             matchBrackets: true,
+    //         }
+    //     }
+    // });
+
+    // var result2 = new Vue({
+    //     el: '#result2',
+    //     data: {
+    //         textarea: '',
+    //         cmOption: {
+    //             tabSize: 4,
+    //             styleActiveLine: true,
+    //             lineNumbers: true,
+    //             mode: 'text/x-c++src',
+    //             theme: themeName,
+    //             matchBrackets: true,
+    //         }
+    //     }
+    // });
 </script>
