@@ -157,7 +157,18 @@ int main(){
                 },
             ],
             value: ''
-        }
+        },
+        watch: {
+            value: function (newValue) {
+                if (newValue == "cpp") {
+                    source.cmOption.mode = "text/x-c++src";
+                } else if (newValue == "python") {
+                    source.cmOption.mode = "text/x-python";
+                } else if (newValue == "java") {
+                    source.cmOption.mode = "text/x-java";
+                }
+            }
+        },
     });
 
     var transform = new Vue({
@@ -202,7 +213,18 @@ int main(){
                 },
             ],
             value: ''
-        }
+        },
+        watch: {
+            value: function (newValue) {
+                if (newValue == "cpp") {
+                    source2.cmOption.mode = "text/x-c++src";
+                } else if (newValue == "python") {
+                    source2.cmOption.mode = "text/x-python";
+                } else if (newValue == "java") {
+                    source2.cmOption.mode = "text/x-java";
+                }
+            }
+        },
     });
 
     var result = new Vue({
