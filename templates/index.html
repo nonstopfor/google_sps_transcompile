@@ -35,73 +35,63 @@
 <body>
     <div id="app">
         <v-app>
-          <v-main>
-            <v-container>
-                <h1>Translate your code!</h1>
-                <v-row>
-                    <v-col>
-                        <v-select
-                        v-model="sourceLanguage"
-                        label="Language of source code"
-                        :items="languageOptions"
-                        item-text="key"
-                        item-value="value"
-                        >
-                        </v-select>
-                    </v-col>
-                    <v-col>
-                        <v-select
-                        v-model="targetLanguage"
-                        label="Language you want to translate to"
-                        :items="languageOptions"
-                        item-text="key"
-                        item-value="value"
-                        >
-                        </v-select>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="3" style="margin-top: -15px;">
-                        <v-btn color="primary" @click="transformCode">Translate</v-btn>
-                    </v-col>
-                    <v-col>
-                        <v-progress-linear :value="translateProgress"></v-progress-linear>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col>
-                        <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
-                    </v-col>
-                    <v-col>
-                        <codemirror v-model="translatedCode" :options="translatedOption">
-                        </codemirror>
-                    </v-col>
-                </v-row>
+            <v-main>
+                <v-container>
+                    <h1>Translate your code!</h1>
+                    <v-row>
+                        <v-col>
+                            <v-select v-model="sourceLanguage" label="Language of source code" :items="languageOptions"
+                                item-text="key" item-value="value">
+                            </v-select>
+                        </v-col>
+                        <v-col>
+                            <v-select v-model="targetLanguage" label="Language you want to translate to"
+                                :items="languageOptions" item-text="key" item-value="value">
+                            </v-select>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="3" style="margin-top: -15px;">
+                            <v-btn color="primary" @click="transformCode">Translate</v-btn>
+                        </v-col>
+                        <v-col>
+                            <v-progress-linear :value="translateProgress"></v-progress-linear>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
+                        </v-col>
+                        <v-col>
+                            <codemirror v-model="translatedCode" :options="translatedOption">
+                            </codemirror>
+                        </v-col>
+                    </v-row>
 
-                <v-row>
-                    <v-col>
-                        <v-btn color="secondary" @click="executeSource">Execute</v-btn>
-                    </v-col>
-                    <v-col>
-                        <v-btn color="secondary" @click="executeTranslated">Execute</v-btn>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col>
-                        <v-textarea
-                        solo
-                        v-model="sourceResult"
-                        ></v-textarea>
-                    </v-col>
-                    <v-col>
-                        <v-textarea
-                        solo
-                        v-model="targetResult"
-                        ></v-textarea>
-                    </v-col>
-                </v-row>
-            </v-container>
-          </v-main>
+                    <v-row>
+                        <v-col cols="2">
+                            <v-btn color="secondary" @click="completeSource">Complete</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn color="secondary" @click="executeSource">Execute</v-btn>
+                        </v-col>
+                        <v-col cols="2">
+                            <v-btn color="secondary">Complete</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn color="secondary" @click="executeTranslated">Execute</v-btn>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <v-textarea solo v-model="sourceResult"></v-textarea>
+                        </v-col>
+                        <v-col>
+                            <v-textarea solo v-model="targetResult"></v-textarea>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-main>
         </v-app>
     </div>
 </body>
@@ -109,9 +99,9 @@
 </html>
 
 <script>
-Vue.use(VueCodemirror);
+    Vue.use(VueCodemirror);
 
-var defaultCpp = String.raw `#include <bits/stdc++.h>
+    var defaultCpp = String.raw `#include <bits/stdc++.h>
 using namespace std;
 
 void my_function() {
@@ -123,15 +113,15 @@ int main(){
   return 0;
 }
 `;
-
-var defaultPython = String.raw`# import any needed libraries here
+    defaultCpp = '';
+    var defaultPython = String.raw `# import any needed libraries here
 def my_function():
   # Enter or paste your code here
 
 my_function()
 `;
-
-var defaultJava = String.raw`// import any needed libraries here
+    defaultPython = '';
+    var defaultJava = String.raw `// import any needed libraries here
 
 public class MyJavaClass {
 
@@ -144,143 +134,174 @@ public class MyJavaClass {
     }
 }
 `;
+    defaultJava = '';
 
-const themeName = 'ayu-mirage';
+    const themeName = 'ayu-mirage';
 
-new Vue({
-    el: '#app',
-    vuetify: new Vuetify(),
-    data: {
-        languageOptions: [
-            { value: 'cpp', key: 'C++' },
-            { value: 'java', key: 'Java' },
-            { value: 'python', key: 'Python' }
-        ],
-        sourceLanguage: '',
-        targetLanguage: '',
-        sourceCode: '',
-        translatedCode: '',
-        translateProgress: 0,
-        sourceOption: {
-            tabSize: 4,
-            styleActiveLine: true,
-            lineNumbers: true,
-            mode: 'text/x-c++src',
-            theme: themeName,
-            matchBrackets: true,
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data: {
+            languageOptions: [{
+                    value: 'cpp',
+                    key: 'C++'
+                },
+                {
+                    value: 'java',
+                    key: 'Java'
+                },
+                {
+                    value: 'python',
+                    key: 'Python'
+                }
+            ],
+            sourceLanguage: '',
+            targetLanguage: '',
+            sourceCode: '',
+            translatedCode: '',
+            translateProgress: 0,
+            sourceOption: {
+                tabSize: 4,
+                styleActiveLine: true,
+                lineNumbers: true,
+                mode: 'text/x-c++src',
+                theme: themeName,
+                matchBrackets: true,
+            },
+            translatedOption: {
+                tabSize: 4,
+                styleActiveLine: true,
+                lineNumbers: true,
+                mode: 'text/x-c++src',
+                theme: themeName,
+                matchBrackets: true,
+            },
+            sourceResult: '',
+            targetResult: ''
         },
-        translatedOption: {
-            tabSize: 4,
-            styleActiveLine: true,
-            lineNumbers: true,
-            mode: 'text/x-c++src',
-            theme: themeName,
-            matchBrackets: true,
-        },
-        sourceResult: '',
-        targetResult: ''
-    },
-    watch: {
-        sourceLanguage: function (newValue) {
-            if (newValue == "cpp") {
-                this.sourceOption.mode = "text/x-c++src";
-                this.sourceCode = defaultCpp;
-            } else if (newValue == "python") {
-                this.sourceOption.mode = "text/x-python";
-                this.sourceCode = defaultPython;
-            } else if (newValue == "java") {
-                this.sourceOption.mode = "text/x-java";
-                this.sourceCode = defaultJava;
+        watch: {
+            sourceLanguage: function (newValue) {
+                if (newValue == "cpp") {
+                    this.sourceOption.mode = "text/x-c++src";
+                    this.sourceCode = defaultCpp;
+                } else if (newValue == "python") {
+                    this.sourceOption.mode = "text/x-python";
+                    this.sourceCode = defaultPython;
+                } else if (newValue == "java") {
+                    this.sourceOption.mode = "text/x-java";
+                    this.sourceCode = defaultJava;
+                }
+            },
+
+            targetLanguage: function (newValue) {
+                if (newValue == "cpp") {
+                    this.translatedOption.mode = "text/x-c++src";
+                } else if (newValue == "python") {
+                    this.translatedOption.mode = "text/x-python";
+                } else if (newValue == "java") {
+                    this.translatedOption.mode = "text/x-java";
+                }
             }
         },
+        methods: {
+            transformCode: function () {
+                // console.log('POST source code', this.sourceCode);
+                // console.log('POST source language', this.sourceLanguage);
+                // console.log('POST target language', this.targetLanguage);
 
-        targetLanguage: function (newValue) {
-            if (newValue == "cpp") {
-                this.translatedOption.mode = "text/x-c++src";
-            } else if (newValue == "python") {
-                this.translatedOption.mode = "text/x-python";
-            } else if (newValue == "java") {
-                this.translatedOption.mode = "text/x-java";
+                if (this.sourceCode.length == 0) {
+                    alert('Source code is empty!');
+                    return;
+                }
+
+                if (this.sourceLanguage.length == 0 || this.targetLanguage.length == 0) {
+                    alert('Please select the programming language.');
+                    return;
+                }
+
+                var vm = this;
+
+                axios({
+                    method: 'post',
+                    url: '/transform/',
+                    data: {
+                        code: this.sourceCode,
+                        source_language: this.sourceLanguage,
+                        target_language: this.targetLanguage,
+                    }
+                }).then(function (response) {
+                    console.log('Result', response.data.result);
+                    vm.translatedCode = response.data.result;
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            executeSource: function () {
+                if (this.sourceLanguage.length == 0) {
+                    alert('Please select the programming language.');
+                    return;
+                }
+
+                var vm = this;
+
+                axios({
+                    method: 'post',
+                    url: '/compile/',
+                    data: {
+                        code: this.sourceCode,
+                        language: this.sourceLanguage,
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                    vm.sourceResult = response.data.result;
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            executeTranslated: function () {
+                if (this.targetLanguage.length == 0) {
+                    alert('Please select the programming language.');
+                    return;
+                }
+
+                var vm = this;
+
+                axios({
+                    method: 'post',
+                    url: '/compile/',
+                    data: {
+                        code: this.translatedCode,
+                        language: this.targetLanguage,
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                    vm.targetResult = response.data.result;
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            completeSource: function () {
+                var code = this.sourceCode;
+                var language = this.sourceLanguage;
+                var result_code = code;
+                if (language == "cpp") {
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
+                        "\nint main(){\n\n}";
+                } else if (language == "java") {
+                    console.log(code);
+                    split_code = code.split('\n');
+                    console.log(split_code);
+                    code = "";
+                    for (var x in split_code) {
+                        split_code[x] = '\t' + split_code[x];
+                    }
+                    code = split_code.join('\n');
+                    console.log(code);
+                    result_code = "public class Main{\n" + code +
+                        "\n\tpublic static void main(String[] args){\n\n\t}\n}";
+                }
+                this.sourceCode = result_code;
             }
         }
-    },
-    methods: {
-        transformCode: function () {
-            // console.log('POST source code', this.sourceCode);
-            // console.log('POST source language', this.sourceLanguage);
-            // console.log('POST target language', this.targetLanguage);
-
-            if (this.sourceCode.length == 0) {
-                alert('Source code is empty!');
-                return;
-            }
-
-            if (this.sourceLanguage.length == 0 || this.targetLanguage.length == 0) {
-                alert('Please select the programming language.');
-                return;
-            }
-
-            var vm = this;
-
-            axios({
-                method: 'post',
-                url: '/transform/',
-                data: {
-                    code: this.sourceCode,
-                    source_language: this.sourceLanguage,
-                    target_language: this.targetLanguage,
-                }
-            }).then(function (response) {
-                console.log('Result', response.data.result);
-                vm.translatedCode = response.data.result;
-            }).catch(function (error) {
-                console.log(error);
-            });
-        },
-        executeSource: function() {            
-            if (this.sourceLanguage.length == 0) {
-                alert('Please select the programming language.');
-                return;
-            }
-            
-            var vm = this;
-
-            axios({
-                method: 'post',
-                url: '/compile/',
-                data: {
-                    code: this.sourceCode,
-                    language: this.sourceLanguage,
-                }
-            }).then(function (response) {
-                console.log(response);
-                vm.sourceResult = response.data.result;
-            }).catch(function (error) {
-                console.log(error);
-            });
-        },
-        executeTranslated: function() {
-            if (this.targetLanguage.length == 0) {
-                alert('Please select the programming language.');
-                return;
-            }
-            
-            var vm = this;
-
-            axios({
-                method: 'post',
-                url: '/compile/',
-                data: {
-                    code: this.translatedCode,
-                    language: this.targetLanguage,
-                }
-            }).then(function (response) {
-                console.log(response);
-                vm.targetResult = response.data.result;
-            }).catch(function (error) {
-                console.log(error);
-            });
-        }
-    }
-})
+    })
 </script>
