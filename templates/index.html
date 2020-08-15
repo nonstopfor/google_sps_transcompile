@@ -68,17 +68,15 @@
                     </v-row>
 
                     <v-row>
-                        <v-col cols="2">
+                        <v-col>
                             <v-btn color="secondary" @click="completeSource">Complete</v-btn>
+                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeSource">Execute</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;" v-text="executingSource"></p>
                         </v-col>
-                        <v-col cols="4">
-                            <v-btn color="secondary" @click="executeSource">Execute</v-btn>
-                        </v-col>
-                        <v-col cols="2">
+                        <v-col>
                             <v-btn color="secondary" @click="completeTranslated">Complete</v-btn>
-                        </v-col>
-                        <v-col cols="4">
-                            <v-btn color="secondary" @click="executeTranslated">Execute</v-btn>
+                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeTranslated">Execute</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;" v-text="executingTranslated"></p>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -144,6 +142,8 @@
                 theme: themeName,
                 matchBrackets: true,
             },
+            executingSource: '<- Complete the code before execution',
+            executingTranslated: '<- Complete the code before execution',
             sourceResult: '',
             targetResult: ''
         },
@@ -210,6 +210,8 @@
                     return;
                 }
 
+                this.executingSource = 'Executing...';
+                this.sourceResult = '';
                 var vm = this;
 
                 axios({
@@ -222,8 +224,10 @@
                 }).then(function (response) {
                     console.log(response);
                     vm.sourceResult = response.data.result;
+                    vm.executingSource = '';
                 }).catch(function (error) {
                     console.log(error);
+                    vm.executingSource = 'An error occurred!';
                 });
             },
             executeTranslated: function () {
@@ -232,6 +236,8 @@
                     return;
                 }
 
+                this.executeTranslated = 'Executing...';
+                this.targetResult = '';
                 var vm = this;
 
                 axios({
@@ -244,8 +250,10 @@
                 }).then(function (response) {
                     console.log(response);
                     vm.targetResult = response.data.result;
+                    vm.executingTranslated = '';
                 }).catch(function (error) {
                     console.log(error);
+                    vm.executingTranslated = 'An error occurred!';
                 });
             },
             completeSource: function () {
