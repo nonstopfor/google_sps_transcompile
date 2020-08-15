@@ -76,7 +76,7 @@
                             <v-btn color="secondary" @click="executeSource">Execute</v-btn>
                         </v-col>
                         <v-col cols="2">
-                            <v-btn color="secondary">Complete</v-btn>
+                            <v-btn color="secondary" @click="completeTranslated">Complete</v-btn>
                         </v-col>
                         <v-col cols="4">
                             <v-btn color="secondary" @click="executeTranslated">Execute</v-btn>
@@ -288,19 +288,41 @@ public class MyJavaClass {
                     result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
                         "\nint main(){\n\n}";
                 } else if (language == "java") {
-                    console.log(code);
+                    // console.log(code);
                     split_code = code.split('\n');
-                    console.log(split_code);
+                    // console.log(split_code);
                     code = "";
                     for (var x in split_code) {
                         split_code[x] = '\t' + split_code[x];
                     }
                     code = split_code.join('\n');
-                    console.log(code);
+                    // console.log(code);
                     result_code = "public class Main{\n" + code +
                         "\n\tpublic static void main(String[] args){\n\n\t}\n}";
                 }
                 this.sourceCode = result_code;
+            },
+            completeTranslated: function(){
+                var code = this.translatedCode;
+                var language = this.targetLanguage;
+                var result_code = code;
+                if (language == "cpp") {
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
+                        "\nint main(){\n\n}";
+                } else if (language == "java") {
+                    // console.log(code);
+                    split_code = code.split('\n');
+                    // console.log(split_code);
+                    code = "";
+                    for (var x in split_code) {
+                        split_code[x] = '\t' + split_code[x];
+                    }
+                    code = split_code.join('\n');
+                    // console.log(code);
+                    result_code = "public class Main{\n" + code +
+                        "\n\tpublic static void main(String[] args){\n\n\t}\n}";
+                }
+                this.translatedCode = result_code;
             }
         }
     })
