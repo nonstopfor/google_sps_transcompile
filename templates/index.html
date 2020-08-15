@@ -52,6 +52,7 @@
                     <v-row>
                         <v-col cols="3" style="margin-top: -15px;">
                             <v-btn color="primary" @click="transformCode">Translate</v-btn>
+                            <p style="display: inline; margin-left: 10px;" v-text="translatingMsg"></p>
                         </v-col>
                         <v-col>
                             <v-progress-linear :value="translateProgress"></v-progress-linear>
@@ -124,6 +125,7 @@
             sourceLanguage: '',
             targetLanguage: '',
             sourceCode: '',
+            translatingMsg: '',
             translatedCode: '',
             translateProgress: 0,
             sourceOption: {
@@ -187,6 +189,8 @@
                     return;
                 }
 
+                this.translatingMsg = 'Translating...';
+
                 var vm = this;
 
                 axios({
@@ -200,8 +204,10 @@
                 }).then(function (response) {
                     console.log('Result', response.data.result);
                     vm.translatedCode = response.data.result;
+                    vm.translatingMsg = '';
                 }).catch(function (error) {
                     console.log(error);
+                    vm.translatingMsg = 'Network error!';
                 });
             },
             executeSource: function () {
@@ -227,7 +233,7 @@
                     vm.executingSource = '';
                 }).catch(function (error) {
                     console.log(error);
-                    vm.executingSource = 'An error occurred!';
+                    vm.executingSource = 'Network error!';
                 });
             },
             executeTranslated: function () {
@@ -253,7 +259,7 @@
                     vm.executingTranslated = '';
                 }).catch(function (error) {
                     console.log(error);
-                    vm.executingTranslated = 'An error occurred!';
+                    vm.executingTranslated = 'Network error!';
                 });
             },
             completeSource: function () {
