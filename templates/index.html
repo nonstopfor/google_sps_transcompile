@@ -21,7 +21,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/addon/edit/matchbrackets.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.0/dist/vue-codemirror.js"></script>
-    <script src="../CssJs/placeholder.js"></script>
     <!-- import Vue before Element -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
@@ -101,40 +100,9 @@
 <script>
     Vue.use(VueCodemirror);
 
-    var defaultCpp = String.raw `#include <bits/stdc++.h>
-using namespace std;
-
-void my_function() {
-  // Enter or paste your code here
-}
-
-int main(){
-  my_function();
-  return 0;
-}
-`;
-    defaultCpp = '';
-    var defaultPython = String.raw `# import any needed libraries here
-def my_function():
-  # Enter or paste your code here
-
-my_function()
-`;
-    defaultPython = '';
-    var defaultJava = String.raw `// import any needed libraries here
-
-public class MyJavaClass {
-
-    private static void my_function() {
-        // Enter or paste your code here
-    }
-
-    public static void main(String[] args) {
-        my_function();
-    }
-}
-`;
-    defaultJava = '';
+    var defaultCpp = String.raw `// Paste a function here`;
+    var defaultPython = String.raw `# Paste a function here`;
+    var defaultJava = String.raw `// Paste a function here, better be a static function`;
 
     const themeName = 'ayu-mirage';
 
@@ -285,20 +253,19 @@ public class MyJavaClass {
                 var language = this.sourceLanguage;
                 var result_code = code;
                 if (language == "cpp") {
-                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
-                        "\nint main(){\n\n}";
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
+                        "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
-                    // console.log(code);
                     split_code = code.split('\n');
-                    // console.log(split_code);
                     code = "";
                     for (var x in split_code) {
                         split_code[x] = '\t' + split_code[x];
                     }
                     code = split_code.join('\n');
-                    // console.log(code);
                     result_code = "public class Main{\n" + code +
-                        "\n\tpublic static void main(String[] args){\n\n\t}\n}";
+                        "\n\tpublic static void main(String[] args){\n\t  // Call your function here\n\t}\n}";
+                } else if (language == "python") {
+                    result_code += "\n\n# Call your function here";
                 }
                 this.sourceCode = result_code;
             },
@@ -307,20 +274,19 @@ public class MyJavaClass {
                 var language = this.targetLanguage;
                 var result_code = code;
                 if (language == "cpp") {
-                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
-                        "\nint main(){\n\n}";
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
+                        "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
-                    // console.log(code);
                     split_code = code.split('\n');
-                    // console.log(split_code);
                     code = "";
                     for (var x in split_code) {
                         split_code[x] = '\t' + split_code[x];
                     }
                     code = split_code.join('\n');
-                    // console.log(code);
                     result_code = "public class Main{\n" + code +
-                        "\n\tpublic static void main(String[] args){\n\n\t}\n}";
+                        "\n\tpublic static void main(String[] args){\n\t  // Call your function here\n\t}\n}";
+                } else if (language == "python") {
+                    result_code += "\n\n# Call your function here";
                 }
                 this.translatedCode = result_code;
             }
