@@ -4,205 +4,303 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    <title>Transcompile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/theme/ayu-mirage.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Translate your code!</title>
     <style>
-        h1 {
-            font-family: Arial;
-            color: #409EFF;
+        .CodeMirror {
+            height: 300px;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/addon/edit/matchbrackets.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.0/dist/vue-codemirror.js"></script>
     <!-- import Vue before Element -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <!-- import JavaScript -->
-    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
     <!-- import axios (a http library) -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 </head>
 
 <body>
-    <div style="text-align: center;">
-        <h1>Welcome to our transcompile website</h1>
+    <div id="app">
+        <v-app>
+            <v-main>
+                <v-container>
+                    <h1>Translate your code!</h1>
+                    <v-row>
+                        <v-col>
+                            <v-select v-model="sourceLanguage" label="Language of source code" :items="languageOptions"
+                                item-text="key" item-value="value">
+                            </v-select>
+                        </v-col>
+                        <v-col>
+                            <v-select v-model="targetLanguage" label="Language you want to translate to"
+                                :items="languageOptions" item-text="key" item-value="value">
+                            </v-select>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="3" style="margin-top: -15px;">
+                            <v-btn color="primary" @click="transformCode">Translate</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;" v-text="translatingMsg"></p>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
+                        </v-col>
+                        <v-col>
+                            <codemirror v-model="translatedCode" :options="translatedOption">
+                            </codemirror>
+                        </v-col>
+                    </v-row>
+
+                    <v-row>
+                        <v-col>
+                            <v-btn color="secondary" @click="completeSource">Complete</v-btn>
+                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeSource">Execute</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;" v-text="executingSource"></p>
+                        </v-col>
+                        <v-col>
+                            <v-btn color="secondary" @click="completeTranslated">Complete</v-btn>
+                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeTranslated">Execute</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;" v-text="executingTranslated"></p>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <v-textarea solo v-model="sourceResult"></v-textarea>
+                        </v-col>
+                        <v-col>
+                            <v-textarea solo v-model="targetResult"></v-textarea>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-main>
+        </v-app>
     </div>
-
-
-
-    <el-button type="primary" id="compile" style="margin: 5px;" @click="compileCode">编译/运行</el-button>
-    <!-- <el-input type="submit" value="编译/运行" style="margin: 5px;width: 10%;" id='submit'>
-        </el-input> -->
-    <template id="select">
-        <el-select v-model="value" placeholder="请选择代码语言">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select>
-    </template>
-    <el-button type="primary" id="transform" style="margin: 5px;" @click="transformCode">转换代码</el-button>
-
-    <template id="transform_select">
-        <el-select v-model="value" placeholder="请选择目标代码语言">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select>
-    </template>
-    <br />
-    <el-input type="textarea" :rows="10" v-model="textarea" id='code' style="width: 40%;" placeholder="请输入代码">
-    </el-input>
-    <el-input type="textarea" :rows="10" v-model="textarea" id='result' style="width: 40%;margin-left: 10%;" placeholder="编译/运行结果">
-    </el-input>
-
-    <br />
-
-    <el-button type="primary" id="compile2" style="margin: 5px;" @click="compileCode">编译/运行</el-button>
-    <!-- <el-input type="submit" value="编译/运行" style="margin: 5px;width: 10%;" id='submit'>
-        </el-input> -->
-    <br />
-    <el-input type="textarea" :rows="10" v-model="textarea" id='code2' style="width: 40%;" placeholder="转换后的代码">
-    </el-input>
-    <el-input type="textarea" :rows="10" v-model="textarea" id='result2' style="width: 40%;margin-left: 10%;" placeholder="编译/运行结果">
-    </el-input>
-
-    <script>
-        var compile = new Vue({
-            el: '#compile',
-            methods: {
-                compileCode: function () {
-                    var sourceCode = source.textarea;
-                    // console.log(sourceCode);
-                    axios({
-                        method: 'post',
-                        url: '/compile/',
-                        data: {
-                            code: sourceCode,
-                            language: select.value,
-                        }
-                    }).then(function (response) {
-                        console.log(response);
-                        source.textarea = response.data.source;
-                        result.textarea = response.data.result;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            },
-        });
-
-        var select = new Vue({
-            el: '#select',
-            data: {
-                options: [{
-                        value: 'python',
-                        label: 'python'
-                    },
-                    {
-                        value: 'cpp',
-                        label: 'c++'
-                    },
-                    {
-                        value: 'java',
-                        label: 'java'
-                    },
-                ],
-                value: ''
-            }
-        });
-
-        var transform = new Vue({
-            el: '#transform',
-            methods: {
-                transformCode: function () {
-                    var sourceCode = source.textarea;
-                    // console.log(sourceCode);
-                    axios({
-                        method: 'post',
-                        url: '/transform/',
-                        data: {
-                            code: sourceCode,
-                            source_language: select.value,
-                            target_language: transform_select.value,
-                        }
-                    }).then(function (response) {
-                        console.log(response);
-                        source.textarea = response.data.source;
-                        source2.textarea = response.data.result;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            },
-        });
-
-        var transform_select = new Vue({
-            el: '#transform_select',
-            data: {
-                options: [{
-                        value: 'python',
-                        label: 'python'
-                    },
-                    {
-                        value: 'cpp',
-                        label: 'c++'
-                    },
-                    {
-                        value: 'java',
-                        label: 'java'
-                    },
-                ],
-                value: ''
-            }
-        });
-
-        var source = new Vue({
-            el: '#code',
-            data: {
-                textarea: ''
-            }
-        });
-
-        var result = new Vue({
-            el: '#result',
-            data: {
-                textarea: ''
-            }
-        });
-
-
-        var compile2 = new Vue({
-            el: '#compile2',
-            methods: {
-                compileCode: function () {
-                    var sourceCode = source2.textarea;
-                    // console.log(sourceCode);
-                    axios({
-                        method: 'post',
-                        url: '/compile/',
-                        data: {
-                            code: sourceCode,
-                            language: transform_select.value,
-                        }
-                    }).then(function (response) {
-                        console.log(response);
-                        source2.textarea = response.data.source;
-                        result2.textarea = response.data.result;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            },
-        });
-
-        var source2 = new Vue({
-            el: '#code2',
-            data: {
-                textarea: ''
-            }
-        });
-
-        var result2 = new Vue({
-            el: '#result2',
-            data: {
-                textarea: ''
-            }
-        });
-    </script>
 </body>
 
 </html>
+
+<script>
+    Vue.use(VueCodemirror);
+
+    var defaultCpp = String.raw `// Paste a function here`;
+    var defaultPython = String.raw `# Paste a function here`;
+    var defaultJava = String.raw `// Paste a function here, better be a static function`;
+
+    const themeName = 'ayu-mirage';
+
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data: {
+            languageOptions: [{
+                    value: 'cpp',
+                    key: 'C++'
+                },
+                {
+                    value: 'java',
+                    key: 'Java'
+                },
+                {
+                    value: 'python',
+                    key: 'Python'
+                }
+            ],
+            sourceLanguage: '',
+            targetLanguage: '',
+            sourceCode: '',
+            translatingMsg: '',
+            translatedCode: '',
+            translateProgress: 0,
+            sourceOption: {
+                tabSize: 4,
+                styleActiveLine: true,
+                lineNumbers: true,
+                mode: 'text/x-c++src',
+                theme: themeName,
+                matchBrackets: true,
+            },
+            translatedOption: {
+                tabSize: 4,
+                styleActiveLine: true,
+                lineNumbers: true,
+                mode: 'text/x-c++src',
+                theme: themeName,
+                matchBrackets: true,
+            },
+            executingSource: '<- Complete the code before execution',
+            executingTranslated: '<- Complete the code before execution',
+            sourceResult: '',
+            targetResult: ''
+        },
+        watch: {
+            sourceLanguage: function (newValue) {
+                if (newValue == "cpp") {
+                    this.sourceOption.mode = "text/x-c++src";
+                    this.sourceCode = defaultCpp;
+                } else if (newValue == "python") {
+                    this.sourceOption.mode = "text/x-python";
+                    this.sourceCode = defaultPython;
+                } else if (newValue == "java") {
+                    this.sourceOption.mode = "text/x-java";
+                    this.sourceCode = defaultJava;
+                }
+            },
+
+            targetLanguage: function (newValue) {
+                if (newValue == "cpp") {
+                    this.translatedOption.mode = "text/x-c++src";
+                } else if (newValue == "python") {
+                    this.translatedOption.mode = "text/x-python";
+                } else if (newValue == "java") {
+                    this.translatedOption.mode = "text/x-java";
+                }
+            }
+        },
+        methods: {
+            transformCode: function () {
+                // console.log('POST source code', this.sourceCode);
+                // console.log('POST source language', this.sourceLanguage);
+                // console.log('POST target language', this.targetLanguage);
+
+                if (this.sourceCode.length == 0) {
+                    alert('Source code is empty!');
+                    return;
+                }
+
+                if (this.sourceLanguage.length == 0 || this.targetLanguage.length == 0) {
+                    alert('Please select the programming language.');
+                    return;
+                }
+
+                this.translatingMsg = 'Translating...';
+
+                var vm = this;
+
+                axios({
+                    method: 'post',
+                    url: '/transform/',
+                    data: {
+                        code: this.sourceCode,
+                        source_language: this.sourceLanguage,
+                        target_language: this.targetLanguage,
+                    }
+                }).then(function (response) {
+                    console.log('Result', response.data.result);
+                    vm.translatedCode = response.data.result;
+                    vm.translatingMsg = '';
+                }).catch(function (error) {
+                    console.log(error);
+                    vm.translatingMsg = 'Network error!';
+                });
+            },
+            executeSource: function () {
+                if (this.sourceLanguage.length == 0) {
+                    alert('Please select the programming language.');
+                    return;
+                }
+
+                this.executingSource = 'Executing...';
+                this.sourceResult = '';
+                var vm = this;
+
+                axios({
+                    method: 'post',
+                    url: '/compile/',
+                    data: {
+                        code: this.sourceCode,
+                        language: this.sourceLanguage,
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                    vm.sourceResult = response.data.result;
+                    vm.executingSource = '';
+                }).catch(function (error) {
+                    console.log(error);
+                    vm.executingSource = 'Network error!';
+                });
+            },
+            executeTranslated: function () {
+                if (this.targetLanguage.length == 0) {
+                    alert('Please select the programming language.');
+                    return;
+                }
+
+                this.executingTranslated = 'Executing...';
+                this.targetResult = '';
+                var vm = this;
+
+                axios({
+                    method: 'post',
+                    url: '/compile/',
+                    data: {
+                        code: this.translatedCode,
+                        language: this.targetLanguage,
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                    vm.targetResult = response.data.result;
+                    vm.executingTranslated = '';
+                }).catch(function (error) {
+                    console.log(error);
+                    vm.executingTranslated = 'Network error!';
+                });
+            },
+            completeSource: function () {
+                var code = this.sourceCode;
+                var language = this.sourceLanguage;
+                var result_code = code;
+                if (language == "cpp") {
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
+                        "\nint main(){\n  // Call your function here\n  return 0;\n}";
+                } else if (language == "java") {
+                    split_code = code.split('\n');
+                    code = "";
+                    for (var x in split_code) {
+                        split_code[x] = '\t' + split_code[x];
+                    }
+                    code = split_code.join('\n');
+                    result_code = "public class Main{\n" + code +
+                        "\n\tpublic static void main(String[] args){\n\t  // Call your function here\n\t}\n}";
+                } else if (language == "python") {
+                    result_code += "\n\n# Call your function here";
+                }
+                this.sourceCode = result_code;
+            },
+            completeTranslated: function(){
+                var code = this.translatedCode;
+                var language = this.targetLanguage;
+                var result_code = code;
+                if (language == "cpp") {
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
+                        "\nint main(){\n  // Call your function here\n  return 0;\n}";
+                } else if (language == "java") {
+                    split_code = code.split('\n');
+                    code = "";
+                    for (var x in split_code) {
+                        split_code[x] = '\t' + split_code[x];
+                    }
+                    code = split_code.join('\n');
+                    result_code = "public class Main{\n" + code +
+                        "\n\tpublic static void main(String[] args){\n\t  // Call your function here\n\t}\n}";
+                } else if (language == "python") {
+                    result_code += "\n\n# Call your function here";
+                }
+                this.translatedCode = result_code;
+            }
+        }
+    })
+</script>
