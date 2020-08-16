@@ -200,7 +200,11 @@
                     }
                 }).then(function (response) {
                     console.log('Result', response.data.result);
-                    vm.translatedCode = response.data.result;
+                    var result = response.data.result;
+                    if(Array.isArray(result)) {
+                        result = result[0];
+                    }
+                    vm.translatedCode = result;
                     vm.translatingMsg = '';
                 }).catch(function (error) {
                     console.log(error);
