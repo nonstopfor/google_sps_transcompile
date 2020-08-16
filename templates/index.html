@@ -52,10 +52,7 @@
                     <v-row>
                         <v-col cols="3" style="margin-top: -15px;">
                             <v-btn color="primary" @click="transformCode">Translate</v-btn>
-                            <p style="display: inline; margin-left: 10px;" v-text="translatingMsg"></p>
-                        </v-col>
-                        <v-col>
-                            <v-progress-linear :value="translateProgress"></v-progress-linear>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;" v-text="translatingMsg"></p>
                         </v-col>
                     </v-row>
                     <v-row>
