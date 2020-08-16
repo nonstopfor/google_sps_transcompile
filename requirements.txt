@@ -6,3 +6,4 @@ fastbpe==0.1.0
 sacrebleu==1.2.11
 six==1.15.0
 clang==6.0.0.2
+beautifulsoup4==4.9.1

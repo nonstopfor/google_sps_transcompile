@@ -16,12 +16,42 @@
             height: 300px;
         }
     </style>
+    <style type="text/css">
+        /* for diff tool */
+        table.diff {
+            font-family: Courier;
+            border: medium;
+        }
+
+        .diff_header {
+            background-color: #e0e0e0
+        }
+
+        td.diff_header {
+            text-align: right
+        }
+
+        .diff_next {
+            background-color: #c0c0c0
+        }
+
+        .diff_add {
+            background-color: #aaffaa
+        }
+
+        .diff_chg {
+            background-color: #ffff77
+        }
+
+        .diff_sub {
+            background-color: #ffaaaa
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.56.0/addon/edit/matchbrackets.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-codemirror@4.0.0/dist/vue-codemirror.js"></script>
-    <script src="../CssJs/placeholder.js"></script>
     <!-- import Vue before Element -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
@@ -51,11 +81,13 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col cols="3" style="margin-top: -15px;">
+                        <v-col style="margin-top: -15px;">
                             <v-btn color="primary" @click="transformCode">Translate</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
+                                v-text="translatingMsg"></p>
                         </v-col>
-                        <v-col>
-                            <v-progress-linear :value="translateProgress"></v-progress-linear>
+                        <v-col style="margin-top: -15px;text-align: right;">
+                            <v-btn color="primary" @click="showDiff">Show Difference</v-btn>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -69,17 +101,18 @@
                     </v-row>
 
                     <v-row>
-                        <v-col cols="2">
+                        <v-col>
                             <v-btn color="secondary" @click="completeSource">Complete</v-btn>
+                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeSource">Execute</v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
+                                v-text="executingSource"></p>
                         </v-col>
-                        <v-col cols="4">
-                            <v-btn color="secondary" @click="executeSource">Execute</v-btn>
-                        </v-col>
-                        <v-col cols="2">
+                        <v-col>
                             <v-btn color="secondary" @click="completeTranslated">Complete</v-btn>
-                        </v-col>
-                        <v-col cols="4">
-                            <v-btn color="secondary" @click="executeTranslated">Execute</v-btn>
+                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeTranslated">Execute
+                            </v-btn>
+                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
+                                v-text="executingTranslated"></p>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -90,6 +123,7 @@
                             <v-textarea solo v-model="targetResult"></v-textarea>
                         </v-col>
                     </v-row>
+                    <div id="diff" style="text-align: center;"></div>
                 </v-container>
             </v-main>
         </v-app>
@@ -101,40 +135,9 @@
 <script>
     Vue.use(VueCodemirror);
 
-    var defaultCpp = String.raw `#include <bits/stdc++.h>
-using namespace std;
-
-void my_function() {
-  // Enter or paste your code here
-}
-
-int main(){
-  my_function();
-  return 0;
-}
-`;
-    defaultCpp = '';
-    var defaultPython = String.raw `# import any needed libraries here
-def my_function():
-  # Enter or paste your code here
-
-my_function()
-`;
-    defaultPython = '';
-    var defaultJava = String.raw `// import any needed libraries here
-
-public class MyJavaClass {
-
-    private static void my_function() {
-        // Enter or paste your code here
-    }
-
-    public static void main(String[] args) {
-        my_function();
-    }
-}
-`;
-    defaultJava = '';
+    var defaultCpp = String.raw `// Paste a function here`;
+    var defaultPython = String.raw `# Paste a function here`;
+    var defaultJava = String.raw `// Paste a function here, better be a static function`;
 
     const themeName = 'ayu-mirage';
 
@@ -158,6 +161,7 @@ public class MyJavaClass {
             sourceLanguage: '',
             targetLanguage: '',
             sourceCode: '',
+            translatingMsg: '',
             translatedCode: '',
             translateProgress: 0,
             sourceOption: {
@@ -176,6 +180,8 @@ public class MyJavaClass {
                 theme: themeName,
                 matchBrackets: true,
             },
+            executingSource: '<- Complete the code before execution',
+            executingTranslated: '<- Complete the code before execution',
             sourceResult: '',
             targetResult: ''
         },
@@ -219,6 +225,8 @@ public class MyJavaClass {
                     return;
                 }
 
+                this.translatingMsg = 'Translating...';
+
                 var vm = this;
 
                 axios({
@@ -231,9 +239,15 @@ public class MyJavaClass {
                     }
                 }).then(function (response) {
                     console.log('Result', response.data.result);
-                    vm.translatedCode = response.data.result;
+                    var result = response.data.result;
+                    if (Array.isArray(result)) {
+                        result = result[0];
+                    }
+                    vm.translatedCode = result;
+                    vm.translatingMsg = '';
                 }).catch(function (error) {
                     console.log(error);
+                    vm.translatingMsg = 'Network error!';
                 });
             },
             executeSource: function () {
@@ -242,6 +256,8 @@ public class MyJavaClass {
                     return;
                 }
 
+                this.executingSource = 'Executing...';
+                this.sourceResult = '';
                 var vm = this;
 
                 axios({
@@ -254,8 +270,10 @@ public class MyJavaClass {
                 }).then(function (response) {
                     console.log(response);
                     vm.sourceResult = response.data.result;
+                    vm.executingSource = '';
                 }).catch(function (error) {
                     console.log(error);
+                    vm.executingSource = 'Network error!';
                 });
             },
             executeTranslated: function () {
@@ -264,6 +282,8 @@ public class MyJavaClass {
                     return;
                 }
 
+                this.executingTranslated = 'Executing...';
+                this.targetResult = '';
                 var vm = this;
 
                 axios({
@@ -276,8 +296,10 @@ public class MyJavaClass {
                 }).then(function (response) {
                     console.log(response);
                     vm.targetResult = response.data.result;
+                    vm.executingTranslated = '';
                 }).catch(function (error) {
                     console.log(error);
+                    vm.executingTranslated = 'Network error!';
                 });
             },
             completeSource: function () {
@@ -285,45 +307,72 @@ public class MyJavaClass {
                 var language = this.sourceLanguage;
                 var result_code = code;
                 if (language == "cpp") {
-                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
-                        "\nint main(){\n\n}";
+                    if (result_code.startsWith("#include<bits/stdc++.h>")) return;
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
+                        "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
-                    // console.log(code);
+                    if (result_code.startsWith("public class Main")) return;
                     split_code = code.split('\n');
-                    // console.log(split_code);
                     code = "";
                     for (var x in split_code) {
                         split_code[x] = '\t' + split_code[x];
                     }
                     code = split_code.join('\n');
-                    // console.log(code);
                     result_code = "public class Main{\n" + code +
-                        "\n\tpublic static void main(String[] args){\n\n\t}\n}";
+                        "\n\tpublic static void main(String[] args){\n\t  // Call your function here\n\t}\n}";
+                } else if (language == "python") {
+                    if (result_code.endsWith("Call your function here")) return;
+                    result_code += "\n\n# Call your function here";
+                } else {
+                    alert("Please select source language first!");
                 }
                 this.sourceCode = result_code;
             },
-            completeTranslated: function(){
+            completeTranslated: function () {
                 var code = this.translatedCode;
                 var language = this.targetLanguage;
                 var result_code = code;
                 if (language == "cpp") {
-                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n" + code +
-                        "\nint main(){\n\n}";
+                    if (result_code.startsWith("#include<bits/stdc++.h>")) return;
+                    result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
+                        "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
-                    // console.log(code);
+                    if (result_code.startsWith("public class Main")) return;
                     split_code = code.split('\n');
-                    // console.log(split_code);
                     code = "";
                     for (var x in split_code) {
                         split_code[x] = '\t' + split_code[x];
                     }
                     code = split_code.join('\n');
-                    // console.log(code);
                     result_code = "public class Main{\n" + code +
-                        "\n\tpublic static void main(String[] args){\n\n\t}\n}";
+                        "\n\tpublic static void main(String[] args){\n\t  // Call your function here\n\t}\n}";
+                } else if (language == "python") {
+                    if (result_code.endsWith("Call your function here")) return;
+                    result_code += "\n\n# Call your function here";
+                } else {
+                    alert("Please select target language first!");
                 }
                 this.translatedCode = result_code;
+            },
+            showDiff: function () {
+
+                axios({
+                    method: 'post',
+                    url: '/diff/',
+                    data: {
+                        text1: this.sourceResult,
+                        text2: this.targetResult,
+                    }
+                }).then(function (response) {
+                    var result = response.data.result;
+                    console.log(result);
+                    document.getElementById("diff").innerHTML = result;
+                }).catch(function (error) {
+                    console.log(error);
+                });
+
             }
+
         }
     })
 </script>
