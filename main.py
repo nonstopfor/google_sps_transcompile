@@ -53,6 +53,61 @@ def compile_run(source_code, language, url='https://api.jdoodle.com/v1/execute')
     return result
 
 
+def split_by_indent(source_code):
+    # 根据缩进分割python代码中的多个函数
+    # 算法：python函数一定以def开头且def前面没有多余的缩进或空格，识别这样的line即可
+
+    fragment = []
+    result = []
+
+    for line in source_code:
+        if (len(line) == 0):
+            continue
+        if (line.split(' ')[0] == "def"):
+            if (len(fragment) > 0):
+                result.append("".join(fragment))
+            fragment = []
+        fragment.append(line)
+    if (len(fragment) != 0):
+        result.append("".join(fragment))
+
+    return result
+
+
+def split_by_brace(source_code):
+
+    # 根据大括号分割java/cpp代码中的多个函数
+    # 算法：
+    # java/cpp代码的函数体一定被包裹在大括号中
+    # 用一个栈找到与第一个左括号匹配的右括号，中间的部分就是一个完整的函数，后面的部分以此类推即可
+    # 注意：这种方法不能处理一个class里面定义了多个函数的情况。
+
+    source_code = "".join(source_code)
+    result = []
+    stack = []
+    start_point = 0
+
+    for i, char in enumerate(source_code):
+        if char == "{":
+            stack.append(char)
+        elif char == "}":
+            assert len(stack) > 0, "Unmatched right brace"
+            stack.pop()
+            if (len(stack) == 0):
+                result.append(source_code[start_point:i + 1])
+                start_point = i + 1
+
+    assert len(stack) == 0, "Unmatched left brace"
+    return result
+
+
+def split_code(source_code, source_language):
+    if (source_language == "python"):
+        return split_by_indent(source_code)
+    else:
+        return split_by_brace(source_code)
+
+
 @app.route('/')
 def index():
     # return 'hello world'
@@ -84,11 +139,19 @@ def transform():
         # print(request.form['code'])
         # axios请求
         data = request.get_json(silent=True)
+
         source = data['code']
         source_language = data['source_language']
         target_language = data['target_language']
-        source2 = run_transform(source, source_language, target_language)
-        print(source, source2)
+
+        split_source_code = split_code(source, source_language)
+        split_target_code = []
+        for fragment in split_source_code:
+            source2 = run_transform(fragment, source_language, target_language)
+            print(fragment, source2)
+            split_target_code.append(source2)
+        source2 = "".join(split_target_code)
+
         return {'source': source, 'result': source2}
     return redirect(url_for('index'))
 
