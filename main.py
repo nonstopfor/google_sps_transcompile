@@ -51,62 +51,7 @@ def compile_run(source_code, language, url='https://api.jdoodle.com/v1/execute')
     else:
         result = w['error']
     return result
-
-
-def split_by_indent(source_code):
-    # 根据缩进分割python代码中的多个函数
-    # 算法：python函数一定以def开头且def前面没有多余的缩进或空格，识别这样的line即可
-
-    fragment = []
-    result = []
-
-    for line in source_code:
-        if (len(line) == 0):
-            continue
-        if (line.split(' ')[0] == "def"):
-            if (len(fragment) > 0):
-                result.append("".join(fragment))
-            fragment = []
-        fragment.append(line)
-    if (len(fragment) != 0):
-        result.append("".join(fragment))
-
-    return result
-
-
-def split_by_brace(source_code):
-
-    # 根据大括号分割java/cpp代码中的多个函数
-    # 算法：
-    # java/cpp代码的函数体一定被包裹在大括号中
-    # 用一个栈找到与第一个左括号匹配的右括号，中间的部分就是一个完整的函数，后面的部分以此类推即可
-    # 注意：这种方法不能处理一个class里面定义了多个函数的情况。
-
-    source_code = "".join(source_code)
-    result = []
-    stack = []
-    start_point = 0
-
-    for i, char in enumerate(source_code):
-        if char == "{":
-            stack.append(char)
-        elif char == "}":
-            assert len(stack) > 0, "Unmatched right brace"
-            stack.pop()
-            if (len(stack) == 0):
-                result.append(source_code[start_point:i + 1])
-                start_point = i + 1
-
-    assert len(stack) == 0, "Unmatched left brace"
-    return result
-
-
-def split_code(source_code, source_language):
-    if (source_language == "python"):
-        return split_by_indent(source_code)
-    else:
-        return split_by_brace(source_code)
-
+    
 
 @app.route('/')
 def index():
@@ -130,6 +75,59 @@ def compile():
         print(source, result)
         return {'source': source, 'result': result}
     return redirect(url_for('index'))
+
+
+def split_by_indent(source_code):
+    # 根据缩进分割python代码
+    # 无法处理函数前有修饰语的情况
+
+    lines = source_code.split("\n")
+    fragment = []
+    result = []
+    first = True
+
+    for line in lines:
+        if (len(line) == 0):
+            continue
+        if (line.split(' ')[0] == "def"):
+            if (first == False and len(fragment) > 0):
+                result.append("".join(fragment))
+                fragment = []
+            first = False
+        fragment.append(line)
+    if (len(fragment) != 0):
+        result.append("".join(fragment))
+    
+    return result
+
+
+def split_by_brace(source_code):
+    # 根据大括号分割java/cpp代码中的多个函数
+    # 无法处理一个class内定义了多个函数的情况
+
+    result = []
+    stack = []
+    start_point = 0
+
+    for i, char in enumerate(source_code):
+        if char == "{":
+            stack.append(char)
+        elif char == "}":
+            assert len(stack) > 0, "Unmatched right brace"
+            stack.pop()
+            if (len(stack) == 0):
+                result.append(source_code[start_point:i + 1])
+                start_point = i + 1
+
+    assert len(stack) == 0, "Unmatched left brace"
+    return result
+
+
+def split_code(source_code, source_language):
+    if (source_language == "python"):
+        return split_by_indent(source_code)
+    else:
+        return split_by_brace(source_code)
 
 
 @app.route('/transform/', methods=('POST', 'GET'))
