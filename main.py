@@ -147,9 +147,9 @@ def transform():
         for fragment in split_source_code:
             source2 = run_transform(fragment, source_language, target_language)
             print(fragment, source2)
-            split_target_code.append(source2)
+            split_target_code.append(source2[0])
         source2 = "".join(split_target_code)
-
+        print("results:\n", source2)
         return {'source': source, 'result': source2}
     return redirect(url_for('index'))
 
