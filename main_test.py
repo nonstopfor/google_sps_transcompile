@@ -5,6 +5,8 @@ Test for website without the influence of the transcompile model
 from flask import Flask, render_template, request, redirect, url_for
 import requests
 import json
+import difflib
+from bs4 import BeautifulSoup
 import sys
 
 app = Flask(__name__)
@@ -177,6 +179,31 @@ def transform():
         source2 = "".join(split_target_code)
 
         return {'source': source, 'result': source2}
+    return redirect(url_for('index'))
+
+
+@app.route('/diff/', methods=('POST', 'GET'))
+def get_diff():
+    if request.method == 'POST':
+        # axios请求
+        data = request.get_json(silent=True)
+        source = data['text1']
+        translated = data['text2']
+        d = difflib.HtmlDiff()
+        html = d.make_file(source.split('\n'), translated.split('\n'))
+        print(source)
+        print(translated)
+        # print(html)
+        # print(type(html))
+        soup = BeautifulSoup(html, 'html.parser')
+        tables = soup.find_all('table')
+        t0 = tables[0]
+        t0['style'] = "margin:auto;" + t0.get('style', '')
+        t1 = tables[1]
+        t1['style'] = "margin:auto;" + t1.get('style', '')
+        result = str(t0) + '\n' + str(t1)
+        # print(result)
+        return {'result': result}
     return redirect(url_for('index'))
 
 
