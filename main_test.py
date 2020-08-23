@@ -72,6 +72,7 @@ def compile():
         return {'source': source, 'result': result}
     return redirect(url_for('index'))
 
+
 def compile_run(source_code, language, url='https://api.jdoodle.com/v1/execute'):
     # 先假设是python code
     if language == 'python':
@@ -198,9 +199,9 @@ def get_diff():
         soup = BeautifulSoup(html, 'html.parser')
         tables = soup.find_all('table')
         t0 = tables[0]
-        t0['style'] = "margin:auto;" + t0.get('style', '')
+        t0['style'] = "margin:auto; width: 100%; text-align:left;" + t0.get('style', '')
         t1 = tables[1]
-        t1['style'] = "margin:auto;" + t1.get('style', '')
+        t1['style'] = "margin:auto; text-align:left;" + t1.get('style', '')
         result = str(t0) + '\n' + str(t1)
         # print(result)
         return {'result': result}

@@ -28,11 +28,12 @@
         }
 
         td.diff_header {
-            text-align: right
+            width: 1px;
         }
 
         .diff_next {
-            background-color: #c0c0c0
+            background-color: #c0c0c0;
+            width: 1px;
         }
 
         .diff_add {
@@ -125,11 +126,12 @@
                             <v-textarea solo v-model="targetResult"></v-textarea>
                         </v-col>
                     </v-row>
-                    <div id="diff" style="text-align: center;"></div>
                 </v-container>
             </v-main>
         </v-app>
     </div>
+    <div id="diff" style="text-align: center; margin-left: 12%;margin-right: 12%;"></div>
+
 </body>
 
 </html>
