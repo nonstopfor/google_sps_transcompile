@@ -21,3 +21,5 @@
 You can put your model code in appropriate location and import your model to run in `run_transform` function. Two model checkpoints([model_1](https://dl.fbaipublicfiles.com/transcoder/model_1.pth), [model_2](https://dl.fbaipublicfiles.com/transcoder/model_2.pth)) should be put in `google_sps_transcompile/transcoder/models`. 
 
 Please replace the path to `libclang.so` to the correct path in `clang.cindex.Config.set_library_path('path_to_libclang')` in `code_tokenizer.py`.
+
+Please install `clang-format` for formatting code. (You can use `apt install clang-format` on Ubuntu)

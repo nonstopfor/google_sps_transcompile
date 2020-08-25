@@ -6,6 +6,7 @@ import difflib
 from bs4 import BeautifulSoup
 sys.path.append("./transcoder")
 
+from code_formatter import format_cpp, format_java, format_python
 from transcoder.translate import Translator
 
 
@@ -195,6 +196,7 @@ def get_diff():
         return {'result': result}
     return redirect(url_for('index'))
 
+
 def run_transform(source, source_language, target_language):
     assert source_language in {'python', 'java', 'cpp'}, source_language
     assert target_language in {'python', 'java', 'cpp'}, target_language
@@ -204,4 +206,13 @@ def run_transform(source, source_language, target_language):
         output = translator1.translate(source, source_language, target_language)
     else:
         output = translator2.translate(source, source_language, target_language)
+
+    for i in range(len(output)):
+        if target_language == 'cpp':
+            output[i] = format_cpp(output[i])
+        elif target_language == 'java':
+            output[i] = format_java(output[i])
+        else:
+            output[i] = format_python(output[i])
+
     return output
