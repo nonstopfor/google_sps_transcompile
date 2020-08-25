@@ -121,7 +121,6 @@ def split_by_indent(source_code):
 
 def split_by_brace(source_code):
     # 根据大括号分割java/cpp代码中的多个函数
-    # 无法处理一个class内定义了多个函数的情况
 
     result = []
     stack = []
