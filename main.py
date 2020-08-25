@@ -82,22 +82,37 @@ def compile():
 
 def split_by_indent(source_code):
     # 根据缩进分割python代码
-    # 无法处理函数前有修饰语的情况
 
     lines = source_code.split("\n")
     fragment = []
     result = []
     first = True
+    with_decorator = False
 
     for line in lines:
+        
         if (len(line) == 0):
             continue
-        if (line.split(' ')[0] == "def"):
+        first_word = line.split(' ')[0]
+
+        if (len(first_word) > 0 and first_word[0] == '@'):
+            with_decorator = True
             if (first == False and len(fragment) > 0):
                 result.append("".join(fragment))
                 fragment = []
             first = False
-        fragment.append(line)
+
+        if (first_word == "def"):
+            if (with_decorator == True):
+                with_decorator = False
+            else:
+                if (first == False and len(fragment) > 0):
+                    result.append("".join(fragment))
+                    fragment = []
+            first = False
+
+        fragment.append(line + '\n')
+    
     if (len(fragment) != 0):
         result.append("".join(fragment))
     
@@ -106,7 +121,6 @@ def split_by_indent(source_code):
 
 def split_by_brace(source_code):
     # 根据大括号分割java/cpp代码中的多个函数
-    # 无法处理一个class内定义了多个函数的情况
 
     result = []
     stack = []
