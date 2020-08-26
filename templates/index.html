@@ -64,73 +64,73 @@
 </head>
 
 <body>
-    <div id="app">
-        <v-app>
-            <v-main>
-                <v-container>
-                    <h1>Translate your code!</h1>
-                    <v-row>
-                        <v-col>
-                            <v-select v-model="sourceLanguage" label="Language of source code" :items="languageOptions"
-                                item-text="key" item-value="value">
-                            </v-select>
-                        </v-col>
-                        <v-col>
-                            <v-select v-model="targetLanguage" label="Language you want to translate to"
-                                :items="languageOptions" item-text="key" item-value="value">
-                            </v-select>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col style="margin-top: -15px;">
-                            <v-btn color="primary" @click="transformCode">Translate</v-btn>
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+                <h1>Translate your code!</h1>
+                <v-row>
+                    <v-col>
+                        <v-select v-model="sourceLanguage" label="Language of source code" :items="languageOptions"
+                                  item-text="key" item-value="value">
+                        </v-select>
+                    </v-col>
+                    <v-col>
+                        <v-select v-model="targetLanguage" label="Language you want to translate to"
+                                  :items="languageOptions" item-text="key" item-value="value">
+                        </v-select>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col style="margin-top: -15px;">
+                        <v-btn color="primary" @click="transformCode">Translate</v-btn>
 
-                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
-                                v-text="translatingMsg"></p>
-                        </v-col>
-                        <v-col style="margin-top: -15px;text-align: right;">
-                            <v-btn color="primary" @click="showDiff">Show Difference</v-btn>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
-                        </v-col>
-                        <v-col>
-                            <codemirror v-model="translatedCode" :options="translatedOption">
-                            </codemirror>
-                        </v-col>
-                    </v-row>
+                        <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
+                           v-text="translatingMsg"></p>
+                    </v-col>
+                    <v-col style="margin-top: -15px;text-align: right;">
+                        <v-btn color="primary" @click="showDiff">Show Difference</v-btn>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col>
+                        <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
+                    </v-col>
+                    <v-col>
+                        <codemirror v-model="translatedCode" :options="translatedOption">
+                        </codemirror>
+                    </v-col>
+                </v-row>
 
-                    <v-row>
-                        <v-col>
-                            <v-btn color="secondary" @click="completeSource">Complete</v-btn>
-                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeSource">Execute</v-btn>
+                <v-row>
+                    <v-col>
+                        <v-btn color="secondary" @click="completeSource">Complete</v-btn>
+                        <v-btn color="secondary" style="margin-left: 10px;" @click="executeSource">Execute</v-btn>
 
-                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
-                                v-text="executingSource"></p>
-                        </v-col>
-                        <v-col>
-                            <v-btn color="secondary" @click="completeTranslated">Complete</v-btn>
-                            <v-btn color="secondary" style="margin-left: 10px;" @click="executeTranslated">Execute
-                            </v-btn>
-                            <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
-                                v-text="executingTranslated"></p>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <v-textarea solo v-model="sourceResult"></v-textarea>
-                        </v-col>
-                        <v-col>
-                            <v-textarea solo v-model="targetResult"></v-textarea>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-main>
-        </v-app>
-    </div>
-    <div id="diff" style="text-align: center; margin-left: 12%;margin-right: 12%;"></div>
+                        <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
+                           v-text="executingSource"></p>
+                    </v-col>
+                    <v-col>
+                        <v-btn color="secondary" @click="completeTranslated">Complete</v-btn>
+                        <v-btn color="secondary" style="margin-left: 10px;" @click="executeTranslated">Execute
+                        </v-btn>
+                        <p class="font-weight-bold" style="display: inline; margin-left: 10px;"
+                           v-text="executingTranslated"></p>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col>
+                        <v-textarea solo v-model="sourceResult"></v-textarea>
+                    </v-col>
+                    <v-col>
+                        <v-textarea solo v-model="targetResult"></v-textarea>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+    </v-app>
+</div>
+<div id="diff" style="text-align: center; margin-left: 12%;margin-right: 12%;"></div>
 
 </body>
 
@@ -139,9 +139,9 @@
 <script>
     Vue.use(VueCodemirror);
 
-    var defaultCpp = String.raw `// Paste a function here`;
-    var defaultPython = String.raw `# Paste a function here`;
-    var defaultJava = String.raw `// Paste a function here, better be a static function`;
+    var defaultCpp = String.raw`// Paste a function here`;
+    var defaultPython = String.raw`# Paste a function here`;
+    var defaultJava = String.raw`// Paste a function here, better be a static function`;
 
     const themeName = 'ayu-mirage';
 
@@ -150,9 +150,9 @@
         vuetify: new Vuetify(),
         data: {
             languageOptions: [{
-                    value: 'cpp',
-                    key: 'C++'
-                },
+                value: 'cpp',
+                key: 'C++'
+            },
                 {
                     value: 'java',
                     key: 'Java'
@@ -314,6 +314,7 @@
                 if (language == "cpp") {
 
                     if (result_code.startsWith("#include<bits/stdc++.h>")) return;
+                    if (result_code.indexOf("main(") != -1) return;
                     result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
                         "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
@@ -342,6 +343,7 @@
                 if (language == "cpp") {
 
                     if (result_code.startsWith("#include<bits/stdc++.h>")) return;
+                    if (result_code.indexOf("main(") != -1) return;
                     result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
                         "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
