@@ -21,8 +21,6 @@ translator2 = Translator(
                         )
 source = ''
 result = ''
-source2 = ''
-result2 = ''
 
 
 def compile_run(source_code, language, url='https://api.jdoodle.com/v1/execute'):
@@ -151,7 +149,6 @@ def split_code(source_code, source_language):
 @app.route('/transform/', methods=('POST', 'GET'))
 def transform():
     if request.method == 'POST':
-        global source, source2
         # print(request.form['code'])
         # axios请求
         data = request.get_json(silent=True)
@@ -159,14 +156,22 @@ def transform():
         source = data['code']
         source_language = data['source_language']
         target_language = data['target_language']
+        beam_size = data['beam_size']
 
         split_source_code = split_code(source, source_language)
         split_target_code = []
+        max_func_list_len = 0
         for fragment in split_source_code:
-            source2 = run_transform(fragment, source_language, target_language)
+            source2 = run_transform(fragment, source_language, target_language, beam_size)
             print(fragment, source2)
-            split_target_code.append(source2[0])
-        source2 = "".join(split_target_code)
+            split_target_code.append(source2)
+            max_func_list_len = max(max_func_list_len, len(source2))
+        source2 = []
+        for i in range(max_func_list_len):
+            multi_func = []
+            for beams in split_target_code:
+                multi_func.append(beams[i % len(beams)])
+            source2.append("".join(multi_func))
         print("results:\n", source2)
         return {'source': source, 'result': source2}
     return redirect(url_for('index'))
@@ -197,22 +202,42 @@ def get_diff():
     return redirect(url_for('index'))
 
 
-def run_transform(source, source_language, target_language):
+def similarity(a, b):
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def run_transform(source, source_language, target_language, beam_size=1):
     assert source_language in {'python', 'java', 'cpp'}, source_language
     assert target_language in {'python', 'java', 'cpp'}, target_language
     assert source_language != target_language, "Source language is same as target language!"
     
     if (source_language == 'cpp' and target_language == 'java') or source_language == 'java':
-        output = translator1.translate(source, source_language, target_language)
+        output = translator1.translate(source, source_language, target_language, beam_size=beam_size)
     else:
-        output = translator2.translate(source, source_language, target_language)
+        output = translator2.translate(source, source_language, target_language, beam_size=beam_size)
 
     for i in range(len(output)):
-        if target_language == 'cpp':
-            output[i] = format_cpp(output[i])
-        elif target_language == 'java':
-            output[i] = format_java(output[i])
-        else:
-            output[i] = format_python(output[i])
+        try:
+            if target_language == 'cpp':
+                formatted_code = format_cpp(output[i])
+            elif target_language == 'java':
+                formatted_code = format_java(output[i])
+            else:
+                formatted_code = format_python(output[i])
+            output[i] = formatted_code
+        except:
+            print(sys.exc_info())
 
-    return output
+    results = []
+    candidates = list(range(len(output)))
+    max_similarity = 0.9
+    while len(candidates) > 0:
+        results.append(output[candidates[0]])
+        candidates = candidates[1:]
+        next_candidates = []
+        for i in candidates:
+            if similarity(results[-1], output[i]) < max_similarity:
+                next_candidates.append(i)
+        candidates = next_candidates
+
+    return results

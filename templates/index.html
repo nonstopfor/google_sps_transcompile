@@ -82,6 +82,11 @@
                         </v-col>
                     </v-row>
                     <v-row>
+                        <v-col style="margin-top: -28px;" cols="1">
+                            <v-select v-model="beamSize" label="Beam Size"
+                                :items="beamSizeOptions" item-text="key" item-value="value">
+                            </v-select>
+                        </v-col>
                         <v-col style="margin-top: -15px;">
                             <v-btn color="primary" @click="transformCode">Translate</v-btn>
 
@@ -99,6 +104,15 @@
                         <v-col>
                             <codemirror v-model="translatedCode" :options="translatedOption">
                             </codemirror>
+                            <v-row justify="space-around">
+                                <v-icon @click="lastTranslated">mdi-chevron-left</v-icon>
+                                {% raw %}
+                                <v-chip class="ma-2" label>
+                                  version {{ translatedCodeChoice }}
+                                </v-chip>
+                                {% endraw %}
+                                <v-icon @click="nextTranslated">mdi-chevron-right</v-icon>
+                            </v-row>
                         </v-col>
                     </v-row>
 
@@ -164,9 +178,29 @@
             ],
             sourceLanguage: '',
             targetLanguage: '',
+            beamSizeOptions: [{
+                    value: 1,
+                    key: '1'
+                },
+                {
+                    value: 5,
+                    key: '5'
+                },
+                {
+                    value: 10,
+                    key: '10'
+                },
+                {
+                    value: 25,
+                    key: '25'
+                }
+            ],
+            beamSize: 1,
             sourceCode: '',
             translatingMsg: '',
             translatedCode: '',
+            translatedCodeList: [''],
+            translatedCodeChoice: 0,
             translateProgress: 0,
             sourceOption: {
                 tabSize: 4,
@@ -240,20 +274,31 @@
                         code: this.sourceCode,
                         source_language: this.sourceLanguage,
                         target_language: this.targetLanguage,
+                        beam_size: this.beamSize,
                     }
                 }).then(function (response) {
                     console.log('Result', response.data.result);
                     var result = response.data.result;
 
-                    if (Array.isArray(result)) {
-                        result = result[0];
+                    if (!Array.isArray(result)) {
+                        result = [result];
                     }
-                    vm.translatedCode = result;
+                    vm.translatedCodeList = result;
+                    vm.translatedCodeChoice = 0
+                    vm.translatedCode = result[vm.translatedCodeChoice];
                     vm.translatingMsg = '';
                 }).catch(function (error) {
                     console.log(error);
                     vm.translatingMsg = 'Network error!';
                 });
+            },
+            nextTranslated: function () {
+                this.translatedCodeChoice = (this.translatedCodeChoice + 1) % this.translatedCodeList.length;
+                this.translatedCode = this.translatedCodeList[this.translatedCodeChoice];
+            },
+            lastTranslated: function () {
+                this.translatedCodeChoice = (this.translatedCodeChoice - 1) % this.translatedCodeList.length;
+                this.translatedCode = this.translatedCodeList[this.translatedCodeChoice];
             },
             executeSource: function () {
                 if (this.sourceLanguage.length == 0) {
