@@ -153,9 +153,9 @@
 <script>
     Vue.use(VueCodemirror);
 
-    var defaultCpp = String.raw `// Paste a function here`;
-    var defaultPython = String.raw `# Paste a function here`;
-    var defaultJava = String.raw `// Paste a function here, better be a static function`;
+    var defaultCpp = String.raw`// Paste a function here`;
+    var defaultPython = String.raw`# Paste a function here`;
+    var defaultJava = String.raw`// Paste a function here, better be a static function`;
 
     const themeName = 'ayu-mirage';
 
@@ -164,9 +164,9 @@
         vuetify: new Vuetify(),
         data: {
             languageOptions: [{
-                    value: 'cpp',
-                    key: 'C++'
-                },
+                value: 'cpp',
+                key: 'C++'
+            },
                 {
                     value: 'java',
                     key: 'Java'
@@ -359,6 +359,7 @@
                 if (language == "cpp") {
 
                     if (result_code.startsWith("#include<bits/stdc++.h>")) return;
+                    if (result_code.indexOf("main(") != -1) return;
                     result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
                         "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
@@ -387,6 +388,7 @@
                 if (language == "cpp") {
 
                     if (result_code.startsWith("#include<bits/stdc++.h>")) return;
+                    if (result_code.indexOf("main(") != -1) return;
                     result_code = "#include<bits/stdc++.h>\nusing namespace std;\n\n" + code +
                         "\nint main(){\n  // Call your function here\n  return 0;\n}";
                 } else if (language == "java") {
