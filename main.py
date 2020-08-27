@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import requests
 import json
 import sys
+import re
 import difflib
 from bs4 import BeautifulSoup
 sys.path.append("./transcoder")
@@ -79,61 +80,74 @@ def compile():
     return redirect(url_for('index'))
 
 
-def split_by_indent(source_code):
-    # 根据缩进分割python代码
+def find_decorator(source_code, start):
+    if (start < 3):
+        return start
+    ptr = start
+    ptr -= 2
+    while (ptr >= 0 and source_code[ptr] != '@' and source_code[ptr] != '\n'):
+        ptr -= 1
+    if (ptr >= 0 and source_code[ptr] == '@'):
+        return ptr
+    return start
 
-    lines = source_code.split("\n")
-    fragment = []
+def find_line_without_indent(source_code, end):
+    ptr = end
+    while (ptr < len(source_code)):
+        while (ptr < len(source_code) and source_code[ptr] != '\n'):
+            ptr += 1
+        if (ptr >= len(source_code) - 1):
+            return len(source_code) - 1
+        if (source_code[ptr + 1] != '\t' and source_code[ptr + 1] != ' ' and source_code[ptr + 1] != '\n' and source_code[ptr + 1] != '#'):
+            return ptr
+        ptr += 1
+    return len(source_code) - 1;
+
+def split_python(source_code):
     result = []
-    first = True
-    with_decorator = False
+    regex = r"(def)\s+[\*,&]*\s*(\w+)\s*\("
 
-    for line in lines:
-        
-        if (len(line) == 0):
-            continue
-        first_word = line.split(' ')[0]
+    search_obj = re.search(regex, source_code)
+    while (search_obj != None):
+        start, end = search_obj.span()
+        start = find_decorator(source_code, start)
+        end = find_line_without_indent(source_code, end - 1) + 1
+        result.append(source_code[start:end])
+        source_code = source_code[end:]
+        search_obj = re.search(regex, source_code)
 
-        if (len(first_word) > 0 and first_word[0] == '@'):
-            with_decorator = True
-            if (first == False and len(fragment) > 0):
-                result.append("".join(fragment))
-                fragment = []
-            first = False
+    return result   
 
-        if (first_word == "def"):
-            if (with_decorator == True):
-                with_decorator = False
-            else:
-                if (first == False and len(fragment) > 0):
-                    result.append("".join(fragment))
-                    fragment = []
-            first = False
+def find_start(source_code, start):
+    while (start > 0 and source_code[start - 1] != '}' and source_code[start - 1] != ';'):
+        start -= 1
+    return start
 
-        fragment.append(line + '\n')
-    
-    if (len(fragment) != 0):
-        result.append("".join(fragment))
-    
-    return result
-
-
-def split_by_brace(source_code):
-    # 根据大括号分割java/cpp代码中的多个函数
-
+def split_cpp_java(source_code):
     result = []
     stack = []
-    start_point = 0
+
+    source_code = source_code.split('\n')
+    for line in source_code.copy():
+        if (len(line) == 0):
+            source_code.remove(line)
+        elif (line[0] == '#'):
+            source_code.remove(line)
+        elif (len(line) >= 2 and line[0] == '/' and line[1] == '/'):
+            source_code.remove(line)
+    source_code = "\n".join(source_code)
 
     for i, char in enumerate(source_code):
         if char == "{":
-            stack.append(char)
+            stack.append(i)
         elif char == "}":
             assert len(stack) > 0, "Unmatched right brace"
+            start = stack[-1]
             stack.pop()
             if (len(stack) == 0):
-                result.append(source_code[start_point:i + 1])
-                start_point = i + 1
+                end = i + 1
+                start = find_start(source_code, start)
+                result.append(source_code[start:end])
 
     assert len(stack) == 0, "Unmatched left brace"
     return result
@@ -141,9 +155,9 @@ def split_by_brace(source_code):
 
 def split_code(source_code, source_language):
     if (source_language == "python"):
-        return split_by_indent(source_code)
+        return split_python(source_code)
     else:
-        return split_by_brace(source_code)
+        return split_cpp_java(source_code)
 
 
 @app.route('/transform/', methods=('POST', 'GET'))
