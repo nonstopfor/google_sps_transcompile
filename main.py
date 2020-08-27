@@ -79,6 +79,7 @@ def compile():
         return {'source': source, 'result': result}
     return redirect(url_for('index'))
 
+
 def find_decorator(source_code, start):
     if (start < 3):
         return start
