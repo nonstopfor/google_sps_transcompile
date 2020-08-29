@@ -98,8 +98,8 @@ def set_pretrain_emb(model, dico, word2id, embeddings):
             if idx is None:
                 continue
             n_found += 1
-            model.embeddings.weight[i] = embeddings[idx]
-            model.pred_layer.proj.weight[i] = embeddings[idx]
+            model.embeddings.weight[i] = embeddings[idx].cuda()
+            model.pred_layer.proj.weight[i] = embeddings[idx].cuda()
     logger.info("Pretrained %i/%i words (%.3f%%)."
                 % (n_found, len(dico), 100. * n_found / len(dico)))
 
@@ -121,7 +121,8 @@ def build_model(params, dico):
         # reload a pretrained model
         if params.reload_model != '':
             logger.info("Reloading model from %s ..." % params.reload_model)
-            reloaded = torch.load(params.reload_model, map_location=lambda storage, loc: storage)['model']
+            reloaded = torch.load(params.reload_model, map_location=lambda storage, loc: storage.cuda(
+                params.local_rank))['model']
             if all([k.startswith('module.') for k in reloaded.keys()]):
                 reloaded = {k[len('module.'):]: v for k, v in reloaded.items()}
 
@@ -139,7 +140,7 @@ def build_model(params, dico):
         logger.info("Number of parameters (model): %i" % sum(
             [p.numel() for p in model.parameters() if p.requires_grad]))
 
-        return [model]
+        return [model.cuda()]
 
     else:
         # build
@@ -177,7 +178,7 @@ def build_model(params, dico):
             if enc_path != '':
                 logger.info("Reloading encoder from %s ..." % enc_path)
                 enc_reload = torch.load(
-                    enc_path, map_location=lambda storage, loc: storage)
+                    enc_path, map_location=lambda storage, loc: storage.cuda(params.local_rank))
                 enc_reload = enc_reload['model' if 'model' in enc_reload else 'encoder']
                 if all([k.startswith('module.') for k in enc_reload.keys()]):
                     enc_reload = {k[len('module.'):]: v for k,
@@ -208,7 +209,7 @@ def build_model(params, dico):
                 for dec in decoders:
                     logger.info("Reloading decoders from %s ..." % dec_path)
                     dec_reload = torch.load(
-                        dec_path, map_location=lambda storage, loc: storage)
+                        dec_path, map_location=lambda storage, loc: storage.cuda(params.local_rank))
                     dec_reload = dec_reload['model' if 'model' in dec_reload else 'decoder']
                     if all([k.startswith('module.') for k in dec_reload.keys()]):
                         dec_reload = {
@@ -249,4 +250,4 @@ def build_model(params, dico):
             [p.numel() for p in decoders[0].parameters() if p.requires_grad]))
         logger.info(f"Number of decoders: {len(decoders)}")
 
-        return [encoder], [dec for dec in decoders]
+        return [encoder.cuda()], [dec.cuda() for dec in decoders]
