@@ -99,6 +99,11 @@
                     </v-row>
                     <v-row>
                         <v-col>
+                            <v-btn color="primary" @click="useExample">Example</v-btn>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col>
                             <codemirror v-model="sourceCode" :options="sourceOption"></codemirror>
                         </v-col>
                         <v-col>
@@ -156,6 +161,34 @@
     var defaultCpp = String.raw`// Paste a function here`;
     var defaultPython = String.raw`# Paste a function here`;
     var defaultJava = String.raw`// Paste a function here, better be a static function`;
+
+    var cppExample = String.raw`void manacher(int *arr, int *p) {
+  int mx = 1, idx = 1;
+  for (int i = 1; i < len - 1; i ++) {
+  	if (mx > i) p[i] = min(p[2 * idx - i], mx - i);
+   	else p[i] = 1;
+    while (arr[i - p[i]] == arr[i + p[i]])
+    	++ p[i];
+    if (i + p[i] > mx) {
+    	mx = i + p[i]; idx = i;
+     }
+  }
+}
+`;
+    var javaExample = String.raw`public static void hello(String name) {
+  System.out.println("Hello, " + name);
+}
+`;
+
+    var pythonExample = String.raw`def binary_search(nums, target):
+  left, right = 0, len(nums)
+  while left < right:
+    mid = left + (right - left) // 2
+    if nums[mid] >= target:
+      right = mid
+    else:
+      left = mid + 1
+  return left`;
 
     const themeName = 'ayu-mirage';
 
@@ -248,6 +281,18 @@
             }
         },
         methods: {
+            useExample: function() {
+                var language = this.sourceLanguage;
+                if (language == "cpp") {
+                    this.sourceCode = cppExample;
+                } else if (language == "java") {
+                    this.sourceCode = javaExample;
+                } else if (language == "python") {
+                    this.sourceCode = pythonExample;
+                } else {
+                    alert('Please select the programming language.');
+                }
+            },
             transformCode: function () {
                 // console.log('POST source code', this.sourceCode);
                 // console.log('POST source language', this.sourceLanguage);

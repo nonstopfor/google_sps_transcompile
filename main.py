@@ -219,6 +219,11 @@ def get_diff():
 def similarity(a, b):
     return difflib.SequenceMatcher(None, a, b).ratio()
 
+def remove_public(code):
+    lines = code.split('\n')
+    if lines[0] == 'public:' and len(lines) > 1:
+        lines = lines[1:]
+    return '\n'.join(lines)
 
 def run_transform(source, source_language, target_language, beam_size=1):
     assert source_language in {'python', 'java', 'cpp'}, source_language
@@ -234,6 +239,7 @@ def run_transform(source, source_language, target_language, beam_size=1):
         try:
             if target_language == 'cpp':
                 formatted_code = format_cpp(output[i])
+                formatted_code = remove_public(formatted_code)
             elif target_language == 'java':
                 formatted_code = format_java(output[i])
             else:
