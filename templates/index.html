@@ -308,6 +308,11 @@
                     return;
                 }
 
+                if (this.sourceLanguage == this.targetLanguage) {
+                    alert('Target language should be different from source language.');
+                    return;
+                }
+
                 this.translatingMsg = 'Translating...';
 
                 var vm = this;
@@ -338,10 +343,19 @@
                 });
             },
             nextTranslated: function () {
+                if(this.translatedCodeList.length <= 1)
+                    return;
+                this.translatedCodeList[this.translatedCodeChoice] = this.translatedCode;
                 this.translatedCodeChoice = (this.translatedCodeChoice + 1) % this.translatedCodeList.length;
                 this.translatedCode = this.translatedCodeList[this.translatedCodeChoice];
             },
             lastTranslated: function () {
+                if(this.translatedCodeList.length <= 1)
+                    return;
+                this.translatedCodeList[this.translatedCodeChoice] = this.translatedCode;
+                if(this.translatedCodeChoice <= 0){
+                    this.translatedCodeChoice += this.translatedCodeList.length;
+                }
                 this.translatedCodeChoice = (this.translatedCodeChoice - 1) % this.translatedCodeList.length;
                 this.translatedCode = this.translatedCodeList[this.translatedCodeChoice];
             },
